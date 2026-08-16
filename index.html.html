@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PANEL PLUS Việt Nam · Tra cứu tồn kho theo màu</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --ink-soft:#4a4740;
+    --paper:#f4f1ea;
+    --panel:#ffffff;
+    --line:#e2ddd0;
+    --blue:#135ba1;
+    --blue-deep:#0c3f70;
+    --wood:#8b6a4c;
+    --wood-deep:#5c4531;
+    --ok:#3f7d4f;
+    --ok-bg:#e7f2e9;
+    --warn:#b1791f;
+    --warn-bg:#faf0dd;
+    --bad:#a83b3b;
+    --bad-bg:#f8e8e6;
+    --radius:10px;
+    --mono: 'SFMono-Regular', ui-monospace, Consolas, Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;overflow-x:hidden;width:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    padding-bottom:80px;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--blue);}
+
+  /* ---------- Header ---------- */
+  header.top{
+    background:linear-gradient(135deg,var(--blue-deep) 0%, var(--blue) 55%, #1c7fbf 100%);
+    color:#fff;
+    padding:28px 24px 84px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-60px; bottom:-90px;
+    width:320px;height:320px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+  }
+  .top-inner{max-width:1180px;margin:0 auto;position:relative;z-index:1;}
+  .brandrow{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .brand-badge{
+    background:#fff;color:var(--blue-deep);
+    font-weight:800;font-size:13px;letter-spacing:.06em;
+    padding:6px 10px;border-radius:6px;
+  }
+  .brand-sub{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;}
+  h1{font-size:clamp(22px,3.4vw,32px);margin:0 0 6px;font-weight:800;letter-spacing:-.01em;}
+  .lede{opacity:.9;max-width:640px;font-size:14.5px;margin:0;}
+
+  /* ---------- Layout shell ---------- */
+  .wrap{max-width:1180px;margin:-56px auto 0;padding:0 24px;position:relative;z-index:2;width:100%;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 1px 2px rgba(28,26,23,.04), 0 8px 24px -12px rgba(28,26,23,.12);
+    min-width:0;
+  }
+
+  /* ---------- Data source card ---------- */
+  .source-card{padding:20px 22px;margin-bottom:18px;}
+  .source-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .source-head h2{font-size:15px;margin:0;font-weight:700;}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:600;
+    padding:4px 10px;border-radius:999px;
+    background:var(--warn-bg);color:var(--warn);
+    white-space:nowrap;
+  }
+  .status-pill.ok{background:var(--ok-bg);color:var(--ok);}
+  .status-pill.bad{background:var(--bad-bg);color:var(--bad);}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none;}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+  .tab-btn{
+    appearance:none;border:none;background:none;cursor:pointer;
+    padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+    font-family:inherit;
+  }
+  .tab-btn.active{color:var(--blue-deep);border-bottom-color:var(--blue);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .field-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  .field{flex:1 1 260px;min-width:0;}
+  .field.small{flex:0 0 160px;min-width:0;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;}
+  input[type=text], input[type=url]{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:9px 11px;
+    font-size:13.5px;
+    font-family:inherit;
+    background:#fbfaf7;
+  }
+  input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    background:var(--blue);color:#fff;
+    font-weight:700;font-size:13.5px;
+    padding:10px 18px;border-radius:7px;
+    font-family:inherit;
+    white-space:nowrap;
+    min-height:40px;
+  }
+  .btn:hover{background:var(--blue-deep);}
+  .btn.ghost{
+    background:transparent;color:var(--blue-deep);
+    border:1px solid var(--line);
+  }
+  .btn.ghost:hover{background:#eef3f8;}
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+  .hint{font-size:12px;color:#847e72;margin-top:8px;line-height:1.5;}
+  .hint code{background:#eeeae0;padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:11.5px;}
+
+  .drop{
+    border:1.5px dashed var(--line);
+    border-radius:9px;
+    padding:22px;
+    text-align:center;
+    background:#fbfaf7;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .drop:hover, .drop.dragover{border-color:var(--blue); background:#f0f5fa;}
+  .drop svg{opacity:.5;margin-bottom:8px;}
+  .drop .fname{font-weight:700;color:var(--blue-deep);margin-top:6px;font-size:13px;}
+  .drop{display:block;}
+
+  /* File input kept in normal flow (not display:none) — some mobile browsers
+     (notably Chrome/Safari on iPadOS in certain modes) fail to open the file
+     picker from a <label for> or programmatic .click() when the target input
+     has display:none. Positioning it off-screen instead keeps it reliably
+     triggerable while staying invisible. */
+  .visually-hidden-input{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  #fileInputFallbackBtn{display:none;}
+  @media (hover:none) and (pointer:coarse){
+    #fileInputFallbackBtn{display:block;}
+  }
+
+  .ipad-note{
+    margin-top:14px;padding:14px 16px;border-radius:9px;
+    background:var(--warn-bg);border:1px solid #ecd9ae;
+    font-size:12.5px;color:var(--ink-soft);line-height:1.55;
+  }
+  .ipad-note ol{margin:0 0 10px;padding-left:18px;}
+  .ipad-note li{margin-bottom:4px;}
+
+  /* ---------- Search card ---------- */
+  .search-card{padding:22px;margin-bottom:18px;}
+  .search-box{position:relative;}
+  .search-box input{
+    width:100%;
+    font-size:17px;
+    padding:14px 16px 14px 46px;
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    font-family:inherit;
+    background:#fbfaf7;
+  }
+  .search-box input:focus{border-color:var(--blue);}
+  .search-box svg.icon{
+    position:absolute;left:15px;top:50%;transform:translateY(-50%);
+    opacity:.45; pointer-events:none;
+  }
+  .search-sub{font-size:12.5px;color:#847e72;margin-top:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+  .chip{
+    font-size:12px;font-weight:600;color:var(--wood-deep);
+    background:#efe7db;border:1px solid #e3d8c4;
+    padding:5px 10px;border-radius:999px;cursor:pointer;
+  }
+  .chip:hover{background:#e6d9c4;}
+
+  /* ---------- Results ---------- */
+  .section-title{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin:26px 2px 10px;
+  }
+  .section-title h2{font-size:15px;margin:0;font-weight:800;letter-spacing:-.01em;}
+  .section-title .count{font-size:12.5px;color:#847e72;font-weight:600;}
+
+  .color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+  .color-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    overflow:hidden;
+  }
+  .swatch{height:64px;position:relative;}
+  .swatch .plcode{
+    position:absolute;bottom:6px;left:8px;
+    font-family:var(--mono);font-size:10.5px;font-weight:700;
+    color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);
+    letter-spacing:.02em;
+  }
+  .color-card .body{padding:10px 12px 12px;}
+  .color-card .name{font-weight:700;font-size:13.5px;margin:0 0 2px;}
+  .color-card .meta{font-size:11.5px;color:#847e72;margin:0 0 8px;}
+  .color-card .stockline{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;
+    font-weight:700;font-size:11.5px;padding:3px 8px;border-radius:999px;
+  }
+  .badge.ok{background:var(--ok-bg);color:var(--ok);}
+  .badge.warn{background:var(--warn-bg);color:var(--warn);}
+  .badge.bad{background:var(--bad-bg);color:var(--bad);}
+  .badge.none{background:#efece4;color:#8a8578;}
+  .color-card .rowcount{color:#847e72;}
+  .color-card{cursor:pointer;}
+  .color-card:hover{border-color:var(--blue);}
+
+  table.data{width:100%;min-width:480px;border-collapse:collapse;font-size:13px;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table.data th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+    color:#847e72;font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.data td{padding:9px 10px;border-bottom:1px solid #f0ede4;vertical-align:top;}
+  table.data tr:last-child td{border-bottom:none;}
+  table.data tbody tr:hover{background:#faf8f3;}
+  .sku{font-family:var(--mono);font-size:11.5px;color:#6b665c;}
+  .qty{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+  .qty.zero{color:var(--bad);}
+  .qty.low{color:var(--warn);}
+  .qty.good{color:var(--ok);}
+  .unit{color:#847e72;font-size:11.5px;}
+
+  .empty{
+    text-align:center;padding:40px 20px;color:#847e72;font-size:13.5px;
+  }
+  .empty b{color:var(--ink);}
+
+  /* ---------- Overview ---------- */
+  .overview-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+  .overview-toolbar select{
+    border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;
+    font-family:inherit;background:#fbfaf7;
+  }
+
+  /* ---- multi-select checkbox dropdown filters ---- */
+  .ms-filter{position:relative;}
+  .ms-btn{
+    border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;
+    font-family:inherit;background:#fbfaf7;color:var(--ink);cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .ms-btn:hover{background:#f4f1ea;}
+  .ms-btn.active{border-color:var(--blue);color:var(--blue-deep);background:#eef5fb;font-weight:600;}
+  .ms-btn .ms-caret{font-size:9px;opacity:.6;}
+  .ms-panel{
+    display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:20;
+    min-width:210px;width:max-content;max-width:min(280px, calc(100vw - 28px));max-height:280px;overflow-y:auto;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    box-shadow:0 8px 24px -8px rgba(28,26,23,.25);padding:6px;
+  }
+  .ms-panel.align-right{left:auto;right:0;}
+  .ms-filter.open .ms-panel{display:block;}
+  .ms-panel label{
+    display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;
+    font-size:12.5px;cursor:pointer;line-height:1.3;
+  }
+  .ms-panel label:hover{background:#f4f1ea;}
+  .ms-panel label input{flex:none;accent-color:var(--blue);}
+  .ms-panel .ms-all{font-weight:700;}
+  .ms-sep{height:1px;background:var(--line);margin:4px 2px 6px;}
+  .ms-empty{padding:8px;font-size:12px;color:#847e72;}
+
+  .ov-row{border-bottom:1px solid #f0ede4;}
+  .ov-row .head{
+    display:grid;grid-template-columns:44px 1.6fr 1fr 90px 90px 24px;
+    gap:10px;align-items:center;padding:10px 8px;cursor:pointer;
+  }
+  .ov-row .head:hover{background:#faf8f3;}
+  .ov-swatch{width:32px;height:32px;border-radius:6px;flex:none;border:1px solid rgba(0,0,0,.08);}
+  .ov-name{font-weight:700;font-size:13px;}
+  .ov-code{font-family:var(--mono);font-size:11px;color:#847e72;}
+  .ov-finish{font-size:12px;color:#847e72;}
+  .ov-total{font-weight:800;text-align:right;font-variant-numeric:tabular-nums;font-size:13.5px;}
+  .caret{transition:transform .15s;color:#a8a190;justify-self:end;}
+  .ov-row.open .caret{transform:rotate(90deg);}
+  .ov-detail{display:none;padding:0 8px 14px 62px;}
+  .ov-row.open .ov-detail{display:block;}
+  .ov-detail table{margin-top:4px;}
+
+  .grid-head{
+    display:grid;grid-template-columns:44px 1.6fr 1fr 90px 90px 24px;
+    gap:10px;padding:0 8px 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    color:#847e72;font-weight:700;border-bottom:1px solid var(--line);
+  }
+
+  footer{max-width:1180px;margin:36px auto 0;padding:0 24px;font-size:12px;color:#a8a190;text-align:center;}
+
+  /* ==================================================================
+     RESPONSIVE — tablet & phone
+     ================================================================== */
+  @media (max-width:900px){
+    .overview-toolbar{gap:6px;}
+    .ms-btn, .overview-toolbar select{padding:9px 10px;font-size:12px;}
+  }
+
+  @media (max-width:640px){
+    .wrap{padding:0 12px;}
+    header.top{padding:20px 14px 70px;}
+    .top-inner{padding:0;}
+    h1{font-size:22px;}
+    .lede{font-size:13.5px;}
+
+    .source-card, .search-card{padding:16px 14px;}
+    .field-row{gap:8px;}
+    .field, .field.small{flex:1 1 100%;}
+    .btn{width:100%;}
+    #loadSheetBtn{margin-top:2px;}
+
+    .tabs{gap:2px;}
+    .tab-btn{padding:10px 10px;font-size:13px;min-height:40px;}
+
+    .search-box input{font-size:16px;padding:13px 14px 13px 42px;}
+
+    .color-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;}
+    .swatch{height:52px;}
+    .color-card .body{padding:8px 9px 9px;}
+    .color-card .name{font-size:12.5px;}
+    .color-card .meta{font-size:11px;}
+    .color-card .stockline{flex-wrap:wrap;gap:5px;}
+
+    .overview-toolbar{
+      display:flex;flex-wrap:wrap;gap:6px;
+      padding:0 !important;margin-bottom:10px;
+    }
+    .ms-filter, .overview-toolbar select{flex:1 1 auto;}
+    .ms-btn{width:100%;justify-content:space-between;min-height:38px;}
+    .overview-toolbar select{width:100%;min-height:38px;}
+
+    .ov-row .head, .grid-head{
+      grid-template-columns:28px 1fr 58px 64px 18px;
+      gap:6px;padding:9px 4px;
+    }
+    .ov-swatch{width:26px;height:26px;}
+    .ov-name{font-size:12.5px;}
+    .ov-code{font-size:10px;}
+    .ov-finish{display:none;}
+    .ov-total{font-size:12px;}
+    .badge{font-size:10px;padding:3px 6px;white-space:nowrap;}
+    .grid-head span:nth-child(3){display:none;} /* ẩn tiêu đề "Bề mặt" trên máy nhỏ, khớp với .ov-finish đã ẩn */
+    .ov-detail{padding:0 4px 12px 34px;}
+
+    table.data{font-size:12px;}
+    table.data th, table.data td{padding:7px 7px;}
+
+    footer{padding:0 14px;font-size:11px;}
+  }
+
+  @media (max-width:380px){
+    .color-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+    .ov-row .head, .grid-head{grid-template-columns:24px 1fr 50px 56px 16px;gap:4px;}
+    .badge{font-size:9.5px;padding:2px 5px;}
+  }
+
+  @media (hover:none) and (pointer:coarse){
+    .ms-btn, .btn, .tab-btn, .chip{min-height:40px;}
+    .color-card, .ov-row .head{cursor:default;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brandrow">
+      <span class="brand-badge">PANEL PLUS</span>
+      <span class="brand-sub">Việt Nam · Bộ sưu tập Melamine 2025–2026</span>
+    </div>
+    <h1>Tra cứu tồn kho theo màu</h1>
+    <p class="lede">Gõ tên màu hoặc mã (ví dụ <em>brown nordic elm</em>, <em>bt1</em>, hoặc <em>brown nordic elm bt1</em>) để xem ngay tồn kho — kể cả khi gõ thiếu chữ.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ DATA SOURCE ============ -->
+  <section class="card source-card">
+    <div class="source-head">
+      <h2>Nguồn dữ liệu tồn kho</h2>
+      <span class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText">Chưa có dữ liệu</span></span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="sheet">Liên kết Google Sheet</button>
+      <button class="tab-btn" data-tab="file">Tải file lên (Excel/CSV)</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-sheet">
+      <div class="field-row">
+        <div class="field">
+          <label for="sheetUrl">Link Google Sheet (chia sẻ ở chế độ "Bất kỳ ai có link – Người xem")</label>
+          <input type="url" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…/edit" />
+        </div>
+        <div class="field small">
+          <label for="sheetTabName">Tên tab</label>
+          <input type="text" id="sheetTabName" value="Main" />
+        </div>
+        <button class="btn" id="loadSheetBtn">Tải dữ liệu</button>
+      </div>
+      <p class="hint">
+        Copy nguyên bảng tồn kho (giữ đúng cấu trúc file gốc) vào Google Sheet, đặt tên tab là <code>Main</code> (hoặc điền đúng tên tab bạn dùng).
+        Công cụ tự tìm dòng tiêu đề chứa "Mã vật tư" nên không cần chỉnh sửa gì thêm. Link sẽ được ghi nhớ cho lần sau.
+      </p>
+    </div>
+
+    <div class="tab-panel" id="tab-file">
+      <label class="drop" id="dropZone" for="fileInput">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5c584e" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <div>Kéo thả file <b>.xlsx</b> hoặc <b>.csv</b> vào đây, hoặc bấm để chọn file</div>
+        <div class="fname" id="fileName"></div>
+      </label>
+      <input type="file" id="fileInput"
+        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/comma-separated-values"
+        class="visually-hidden-input" />
+      <button type="button" class="btn ghost" id="fileInputFallbackBtn" style="width:100%;margin-top:8px;">Không mở được hộp thoại chọn file? Bấm vào đây</button>
+      <p class="hint">Dùng đúng file "Báo cáo tồn kho" xuất từ hệ thống — không cần chỉnh sửa gì trước khi tải lên.</p>
+
+      <div class="ipad-note" id="ipadNote">
+        <p style="margin:0 0 8px;font-weight:700;color:var(--warn);">⚠️ Dùng iPad (Chrome/Safari) mà nút chọn file không mở hộp thoại?</p>
+        <p style="margin:0 0 10px;">Đây là lỗi thường gặp của Chrome trên iPadOS khi mở hộp thoại chọn file trong 1 số trường hợp (site được thêm vào màn hình chính, hoặc chế độ duyệt riêng tư). Cách ổn định nhất trên iPad là <b>dùng Google Sheet</b> thay vì tải file trực tiếp:</p>
+        <ol style="margin:0 0 10px;padding-left:18px;">
+          <li>Mở file "Báo cáo tồn kho" (Excel) → tải lên Google Drive.</li>
+          <li>Mở file đó bằng <b>Google Sheets</b> (chạm giữ → Mở bằng → Google Trang tính).</li>
+          <li>Trong Google Sheets: <b>Chia sẻ</b> → chọn "Bất kỳ ai có link" → quyền <b>Người xem</b> → Sao chép link.</li>
+          <li>Quay lại tab <b>"Liên kết Google Sheet"</b> ở trên, dán link vào, kiểm tra đúng tên tab, rồi bấm <b>Tải dữ liệu</b>.</li>
+        </ol>
+        <button type="button" class="btn ghost" id="gotoSheetTabBtn">Chuyển sang tab Liên kết Google Sheet</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SEARCH ============ -->
+  <section class="card search-card">
+    <div class="search-box">
+      <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1a17" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Nhập tên màu hoặc mã… ví dụ: brown nordic elm bt1" autocomplete="off" />
+    </div>
+    <div class="search-sub" id="searchSub">Nhập ít nhất 2 ký tự để tìm trong catalogue màu và toàn bộ mã tồn kho.</div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <!-- ============ RESULTS: catalog colors matched ============ -->
+  <div id="resultsColorsWrap" style="display:none">
+    <div class="section-title">
+      <h2>Màu khớp trong catalogue</h2>
+      <span class="count" id="colorsCount"></span>
+    </div>
+    <div class="color-grid" id="colorsGrid"></div>
+  </div>
+
+  <!-- ============ RESULTS: inventory rows matched ============ -->
+  <div id="resultsRowsWrap" style="display:none">
+    <div class="section-title">
+      <h2>Dòng tồn kho khớp</h2>
+      <span class="count" id="rowsCount"></span>
+    </div>
+    <div class="card" style="padding:6px 8px;overflow-x:auto;">
+      <table class="data" id="rowsTable">
+        <thead><tr><th>Mã vật tư</th><th>Tên vật tư</th><th>ĐVT</th><th style="text-align:right">Tồn kho</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card empty" id="emptyState">
+    Chưa tìm gì cả — gõ tên màu ở ô tìm kiếm phía trên để bắt đầu.
+  </div>
+
+  <!-- ============ OVERVIEW: all 40 colors ============ -->
+  <div class="section-title" style="margin-top:38px;">
+    <h2>Tổng quan tồn kho — toàn bộ màu catalogue</h2>
+    <span class="count" id="ovCount"></span>
+  </div>
+  <section class="card" style="padding:14px 8px 8px;">
+    <div class="overview-toolbar" style="padding:0 8px 12px;">
+      <div class="ms-filter" id="ms-status">
+        <button type="button" class="ms-btn" id="msBtn-status">Tất cả trạng thái <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-status"></div>
+      </div>
+      <select id="ovSort">
+        <option value="catalog">Sắp xếp: theo thứ tự catalogue</option>
+        <option value="stock-asc">Sắp xếp: tồn kho thấp → cao</option>
+        <option value="stock-desc">Sắp xếp: tồn kho cao → thấp</option>
+        <option value="name">Sắp xếp: theo tên A→Z</option>
+      </select>
+      <div class="ms-filter" id="ms-finish">
+        <button type="button" class="ms-btn" id="msBtn-finish">Tất cả bề mặt <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-finish"></div>
+      </div>
+      <div class="ms-filter" id="ms-thickness">
+        <button type="button" class="ms-btn" id="msBtn-thickness">Tất cả khổ ván (độ dày) <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-thickness"></div>
+      </div>
+      <div class="ms-filter" id="ms-type">
+        <button type="button" class="ms-btn" id="msBtn-type">Tất cả loại ván <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-type"></div>
+      </div>
+      <div class="ms-filter" id="ms-moisture">
+        <button type="button" class="ms-btn" id="msBtn-moisture">Tất cả cấp chống ẩm <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-moisture"></div>
+      </div>
+      <div class="ms-filter" id="ms-size">
+        <button type="button" class="ms-btn" id="msBtn-size">Tất cả khổ ván <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-size"></div>
+      </div>
+      <div class="ms-filter" id="ms-glue">
+        <button type="button" class="ms-btn" id="msBtn-glue">Tất cả loại keo <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-glue"></div>
+      </div>
+      <div class="ms-filter" id="ms-quality">
+        <button type="button" class="ms-btn" id="msBtn-quality">Tất cả cấp chất lượng <span class="ms-caret">▾</span></button>
+        <div class="ms-panel" id="msPanel-quality"></div>
+      </div>
+    </div>
+    <div class="grid-head">
+      <span></span><span>Tên màu / Mã</span><span>Bề mặt</span><span style="text-align:right">Tồn (gộp)</span><span>Trạng thái</span><span></span>
+    </div>
+    <div id="overviewList"></div>
+  </section>
+
+  <footer>
+    Công cụ nội bộ · dữ liệu đọc trực tiếp từ Google Sheet hoặc file bạn tải lên, không lưu trữ trên máy chủ nào khác.<br/>
+    "Tồn (gộp)" là tổng số theo tất cả dòng vật tư khớp với màu — có thể gồm nhiều loại (HPL / MDF / Ván dăm) và đơn vị khác nhau; bấm để xem chi tiết từng dòng.
+  </footer>
+</div>
+
+<script>
+/* =========================================================================
+   1. CATALOGUE — 40 màu, trích từ PNPVN_CATALOGUE_40_COLORS_2025-2026
+   ========================================================================= */
+const CATALOG = [
+  {name:"White",code:"MK630N",finish:"Matt",pl:"PL 1000 T",hex:"#F5F3EE"},
+  {name:"White",code:"MK630N",finish:"Pearl",pl:"PL 1009 T",hex:"#F7F5F0"},
+  {name:"Beige",code:"MFI599",finish:"Pearl",pl:"PL 0023 T, G",hex:"#D4B9A6"},
+  {name:"Sandstone",code:"073",finish:"Pearl",pl:"PL 2092 T, G",hex:"#B08A6C"},
+  {name:"Grey",code:"MK203",finish:"Alutex",pl:"",hex:"#D7DBD9"},
+  {name:"Grey",code:"MK3258",finish:"Pearl",pl:"PL 0045 T",hex:"#C7CDCC"},
+  {name:"Grey",code:"MK3238",finish:"Alutex",pl:"",hex:"#C7BEBA"},
+  {name:"Galaxy Grey",code:"AS7",finish:"Matt",pl:"PL 0041 T, G",hex:"#8B8681"},
+  {name:"Carbon Grey",code:"BE4",finish:"Matt",pl:"PL 0035 T, G",hex:"#45454C"},
+  {name:"Graphite",code:"MK3200",finish:"Pearl",pl:"PL 2090 T, G",hex:"#4B4A52"},
+  {name:"Black",code:"AT1",finish:"Alutex",pl:"PL 2004 T",hex:"#1A1B1D"},
+
+  {name:"Origami Linen",code:"BT7",finish:"Matt",pl:"PL 0517 M",hex:"#E9E6DF"},
+  {name:"Travertine",code:"BC6",finish:"Concrete",pl:"PL 0230 M",hex:"#DFD8CE"},
+  {name:"Cotone",code:"BC9",finish:"Canvas",pl:"PL 0275 M",hex:"#D6D3CC"},
+  {name:"Denim Grizzly",code:"AA3",finish:"Dotline",pl:"PL 0263 M",hex:"#6E6862"},
+  {name:"Rosie Aluminum",code:"BK5",finish:"Fino Metal",pl:"PL 8101 B",hex:"#C6A583"},
+  {name:"Foss Zilk",code:"BK2",finish:"Cross Metal",pl:"PL 0267 M",hex:"#7A5F49"},
+
+  {name:"Honey Oak",code:"AB5",finish:"Woodrift",pl:"PL 0207 BW",hex:"#EFE7DA"},
+  {name:"White Malt Oak",code:"AK1",finish:"Woodrift",pl:"PL 4011 BW",hex:"#F1E9DE"},
+  {name:"White Nordic Elm",code:"BS9",finish:"Matt Woodgrain",pl:"PL 0509 BW",hex:"#E7DCD3"},
+  {name:"Marcelo Ash",code:"BK7",finish:"Matt Woodgrain",pl:"PL 4017 BW",hex:"#E0C9AC"},
+  {name:"Cornwall Oak",code:"BP4",finish:"Woodrift",pl:"PL 0286 BW",hex:"#E2C7A3"},
+  {name:"Caramel Oak",code:"BK8",finish:"Matt Woodgrain",pl:"PL 4022 BW",hex:"#DDB27E"},
+
+  {name:"Oak",code:"69A",finish:"Matt Woodgrain",pl:"PL 0242 BW",hex:"#E9C9BE"},
+  {name:"Maple",code:"BH8",finish:"Matt Woodgrain",pl:"PL 0290 BW",hex:"#EAD8A9"},
+  {name:"Wood Oak",code:"BT4",finish:"Matt Woodgrain",pl:"PL 0504 BW",hex:"#D2BC98"},
+  {name:"Natural Oak",code:"MFD0125",finish:"Matt Woodgrain",pl:"PL 0246 BW",hex:"#D9B98B"},
+  {name:"Nolce Walnut",code:"BS8",finish:"Matt Woodgrain",pl:"PL 5412 BW",altname:"Inigo Walnut",hex:"#C9A778"},
+  {name:"Cherry Capucino",code:"67B",finish:"Matt Woodgrain",pl:"PL 0201 BW",hex:"#B8846C"},
+  {name:"Honey Elm",code:"BJ3",finish:"Matt Woodgrain",pl:"PL 4045 BW",hex:"#B98C63"},
+  {name:"Vintage Oak",code:"BP3",finish:"Woodrift",pl:"PL 0297 BW",hex:"#B98357"},
+
+  {name:"Homie Eucalyptus",code:"AP9",finish:"Matt",pl:"PL 4009 BW",hex:"#A9A29B"},
+  {name:"Dark Cornwall Oak",code:"AV3",finish:"Woodrift",pl:"PL 0204 BW",hex:"#9C7A54"},
+  {name:"Brown Nordic Elm",code:"BT1",finish:"Matt Woodgrain",pl:"PL 0510 BW",hex:"#8B6A4C"},
+  {name:"Mocha Walnut",code:"AU5",finish:"Woodrift",pl:"PL 0219 BW",hex:"#6E5138"},
+  {name:"Emperor Walnut",code:"BK3",finish:"Matt Woodgrain",pl:"PL 0236 BW",hex:"#5C4531"},
+  {name:"Noce Champagne",code:"BQ8",finish:"Alutex",pl:"PL 0212 BW",hex:"#6B4A38"},
+  {name:"Barkwalnut",code:"AJ4",finish:"Alutex",pl:"PL 0209 BW",hex:"#5A4433"},
+  {name:"Lava Acacia",code:"AQ1",finish:"Matt Woodgrain",pl:"PL 0213 BW",hex:"#4B3626"},
+  {name:"Fumed Oak",code:"AQ3",finish:"Woodrift",pl:"PL 0273 BW",hex:"#3A2A22"},
+];
+CATALOG.forEach((c,i)=>{
+  c.id = i;
+  c.displayName = c.altname ? (c.name+" / "+c.altname) : c.name;
+  c.label = c.displayName + " " + c.code;
+});
+
+// ---------------------------------------------------------------------------
+// CATALOG_COLORS — 1 thẻ / 1 mã màu (melamine). Đây mới là đơn vị nhóm chính:
+// một mã màu (VD MK630N) có thể tồn tại ở nhiều bề mặt/mã khuôn khác nhau
+// (Matt, Pearl, Alutex...) trong thực tế tồn kho, kể cả khi catalogue tĩnh
+// bên dưới chỉ liệt kê sẵn 1-2 bề mặt cho mã đó. "Bề mặt / mã khuôn" được
+// nhận diện theo TỪNG DÒNG hàng tồn kho (xem parseFinish), không còn cố định
+// theo catalogue nữa — nhờ vậy lọc theo bề mặt sẽ luôn thấy đúng thực tế tồn
+// kho, kể cả những kết hợp mã màu + bề mặt mà catalogue tĩnh chưa liệt kê.
+const CATALOG_COLORS = (function(){
+  const map = new Map();
+  CATALOG.forEach(c=>{
+    if(!map.has(c.code)){
+      map.set(c.code, {
+        id: map.size,
+        code: c.code,
+        name: c.name,
+        altname: c.altname,
+        displayName: c.displayName,
+        label: c.label,
+        hex: c.hex,
+        catalogFinishes: c.finish ? [c.finish] : [],
+        plList: c.pl ? [c.pl] : [],
+      });
+    } else {
+      const entry = map.get(c.code);
+      if(c.finish && !entry.catalogFinishes.includes(c.finish)) entry.catalogFinishes.push(c.finish);
+      if(c.pl && !entry.plList.includes(c.pl)) entry.plList.push(c.pl);
+    }
+  });
+  return Array.from(map.values());
+})();
+
+/* =========================================================================
+   2. STATE
+   ========================================================================= */
+let INVENTORY = [];        // [{maVatTu, tenVatTu, dvt, tonCuoi}]
+let dataLoadedAt = null;
+
+/* =========================================================================
+   3. TEXT NORMALIZATION + MATCHING
+   ========================================================================= */
+const VN_MAP = [
+  [/[àáảãạăằắẳẵặâầấẩẫậ]/g,'a'],[/[đ]/g,'d'],
+  [/[èéẻẽẹêềếểễệ]/g,'e'],[/[ìíỉĩị]/g,'i'],
+  [/[òóỏõọôồốổỗộơờớởỡợ]/g,'o'],[/[ùúủũụưừứửữự]/g,'u'],
+  [/[ỳýỷỹỵ]/g,'y']
+];
+function norm(s){
+  if(!s) return "";
+  s = String(s).toLowerCase();
+  VN_MAP.forEach(([re,rep])=> s = s.replace(re,rep));
+  s = s.replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  return s;
+}
+function tokens(s){ return norm(s).split(' ').filter(Boolean); }
+
+// row text used for searching / matching
+function rowText(row){ return norm(row.maVatTu + ' ' + row.tenVatTu); }
+
+// does an inventory row match a free-text query? (all tokens must appear, any order)
+function rowMatchesQuery(row, qTokens){
+  const t = rowText(row);
+  return qTokens.every(tok => t.includes(tok));
+}
+
+// does a catalog color match a free-text query?
+// Ưu tiên mã màu (melamine) + tên màu — KHÔNG dùng mã laminate (PL...) để so khớp,
+// vì mã laminate hay bị trùng số giữa các màu khác nhau, dễ gây nhận nhầm màu.
+function catalogMatchesQuery(cat, qTokens){
+  const t = norm(cat.name + ' ' + (cat.altname||'') + ' ' + cat.code);
+  return qTokens.every(tok => t.includes(tok));
+}
+
+/* =========================================================================
+   3a. NHẬN DIỆN THUỘC TÍNH TỪ TÊN VẬT TƯ (tenVatTu)
+   Toàn bộ các thuộc tính dưới đây được đọc trực tiếp từ tên vật tư của TỪNG
+   DÒNG hàng tồn kho — không cố định theo catalogue — vì 1 mã màu có thể tồn
+   tại ở nhiều loại ván / bề mặt / độ dày / cấp chống ẩm khác nhau trong tồn
+   kho thực tế. CHỈNH SỬA các bảng RULES dưới đây nếu cách đặt tên thực tế
+   của Panel Plus viết khác đi.
+   ========================================================================= */
+
+// --- Loại ván: MFC / MDF / HPL ---
+const TYPE_RULES = [
+  { label:'MFC', test:/\bmfc\b/ },
+  { label:'MDF', test:/\bmdf\b/ },
+  { label:'HPL', test:/\bhpl\b/ },
+];
+function parseType(text){
+  if(!text) return null;
+  const t = norm(text);
+  for(const rule of TYPE_RULES){ if(rule.test.test(t)) return rule.label; }
+  return null;
+}
+
+// --- Cấp chống ẩm: HMR V313 / HMR / để trống = Không chống ẩm ---
+// (luôn phân loại được — hàng không có ký hiệu chống ẩm nghĩa là hàng thường)
+const MOISTURE_RULES = [
+  { label:'HMR V313', test:/hmr\s?v\s?313/ },
+  { label:'HMR',       test:/\bhmr\b/ },
+];
+function parseMoisture(text){
+  const t = norm(text || '');
+  for(const rule of MOISTURE_RULES){ if(rule.test.test(t)) return rule.label; }
+  return 'Không chống ẩm';
+}
+
+// --- Loại keo: Super E0 / CarbP2 / EN717 / E0 / E1 / E2 ---
+// (kiểm tra biến thể cụ thể hơn — Super E0 — trước E0 để không bị nuốt mất)
+const GLUE_RULES = [
+  { label:'Super E0', test:/su[pb]+er\s?e0/ },
+  { label:'CarbP2',   test:/carb\s?p2/ },
+  { label:'EN717',    test:/en\s?717/ },
+  { label:'E2',        test:/\be2\b/ },
+  { label:'E1',        test:/\be1\b/ },
+  { label:'E0',        test:/\be0\b/ },
+];
+function parseGlue(text){
+  if(!text) return null;
+  const t = norm(text);
+  for(const rule of GLUE_RULES){ if(rule.test.test(t)) return rule.label; }
+  return null;
+}
+
+// --- Độ dày ván (mm): 2.5 / 4 / 6 / 8 / 9 / 12 / 15 / 17 / 18 / 25 ---
+function parseThickness(text){
+  if(!text) return null;
+  const m = String(text).match(/(\d{1,2}(?:[.,]\d{1,2})?)\s*mm\b/i);
+  return m ? (m[1].replace(',', '.') + 'mm') : null;
+}
+
+// --- Khổ ván (kích thước tấm): 1220x2440 / 1830x2440 ---
+function parseSheetSize(text){
+  if(!text) return null;
+  const m = String(text).match(/(\d{3,4})\s*[x×]\s*(\d{3,4})/i);
+  return m ? (m[1] + 'x' + m[2]) : null;
+}
+
+// --- Mã khuôn / mặt (bề mặt): danh sách theo catalogue thực tế của Panel Plus ---
+// Thứ tự quan trọng: cụm 2 từ cụ thể (VD "Matt Woodgrain", "Super Matt") phải
+// được kiểm tra TRƯỚC từ đơn chung chung (VD "Matt") để không bị nhận nhầm.
+const FINISH_RULES = [
+  { label:'Iconic Wood',    test:/iconic\s?wood/ },
+  { label:'Cross Metal',    test:/cross\s?metal/ },
+  { label:'Fino Metal',     test:/fino\s?metal/ },
+  { label:'Stipple Matt',   test:/stipple\s?matt/ },
+  { label:'Gun Metal',      test:/gun\s?metal/ },
+  { label:'Mirror Gloss',   test:/mirror\s?gloss/ },
+  { label:'Matt Woodgrain', test:/matt\s?woodgrain/ },
+  { label:'Super Matt',     test:/super\s?matt/ },
+  { label:'Mini Pearl',     test:/mini\s?pearl/ },
+  { label:'Plaster',        test:/\bplaster\b/ },
+  { label:'Concrete',       test:/\bconcrete\b/ },
+  { label:'Crosscut',       test:/\bcrosscut\b/ },
+  { label:'Textile',        test:/\btextile\b/ },
+  { label:'Canvas',         test:/\bcanvas\b/ },
+  { label:'Woodgrain',      test:/\bwoodgrain\b/ },
+  { label:'Finoline',       test:/\bfinoline\b/ },
+  { label:'Woodrift',       test:/\bwoodrift\b/ },
+  { label:'Alutex',         test:/\balutex\b/ },
+  { label:'Matt',           test:/\bmatt\b/ },
+  { label:'Pearl',          test:/\bpearl\b/ },
+];
+function parseFinish(text){
+  if(!text) return null;
+  const t = norm(text);
+  for(const rule of FINISH_RULES){ if(rule.test.test(t)) return rule.label; }
+  return null;
+}
+
+// --- Cấp chất lượng hàng: A / B / C ---
+// Bắt buộc phải có từ khóa đi kèm ("loại a", "hàng b", "grade c", "cấp a", "hạng b"...)
+// — không nhận diện chữ A/B/C đứng lẻ một mình, để tránh nhận nhầm với các ký tự
+// khác vô tình xuất hiện trong tên vật tư (VD mã hàng có chữ cái lẻ không liên quan).
+function parseQuality(text){
+  if(!text) return null;
+  const t = norm(text);
+  const m = t.match(/\b(?:loai|hang|grade|cap)\s?([abc])\b/);
+  return m ? m[1].toUpperCase() : null;
+}
+
+/* =========================================================================
+   3b. MULTI-SELECT CHECKBOX FILTERS (trạng thái / bề mặt / khổ ván / loại ván / cấp chống ẩm / keo / chất lượng)
+   ========================================================================= */
+// filterState[id] === null  -> "chọn tất cả" (không lọc gì)
+// filterState[id] === Set   -> chỉ những giá trị có trong Set mới khớp
+const filterState = { status:null, finish:null, thickness:null, size:null, type:null, moisture:null, glue:null, quality:null };
+
+function optionsFromRows(parseFn, sortFn){
+  const set = new Set();
+  INVENTORY.forEach(r=>{ const v = parseFn(r.tenVatTu); if(v) set.add(v); });
+  return Array.from(set).sort(sortFn).map(v=>({value:v, text:v}));
+}
+
+const FILTER_DEFS = [
+  { id:'status', allLabel:'Tất cả trạng thái', shortLabel:'Trạng thái',
+    getOptions: ()=> ([
+      {value:'ok',   text:'Còn hàng'},
+      {value:'warn', text:'Sắp hết'},
+      {value:'bad',  text:'Hết hàng'},
+      {value:'none', text:'Chưa khớp dữ liệu'},
+    ]) },
+  { id:'finish', allLabel:'Tất cả mã khuôn/mặt', shortLabel:'Mã khuôn/mặt',
+    getOptions: ()=> optionsFromRows(parseFinish, (a,b)=>a.localeCompare(b)) },
+  { id:'thickness', allLabel:'Tất cả độ dày ván', shortLabel:'Độ dày',
+    getOptions: ()=> optionsFromRows(parseThickness, (a,b)=> parseFloat(a)-parseFloat(b)) },
+  { id:'size', allLabel:'Tất cả khổ ván', shortLabel:'Khổ ván',
+    getOptions: ()=> optionsFromRows(parseSheetSize, (a,b)=>a.localeCompare(b)) },
+  { id:'type', allLabel:'Tất cả loại ván', shortLabel:'Loại ván',
+    getOptions: ()=> optionsFromRows(parseType, (a,b)=>a.localeCompare(b)) },
+  { id:'moisture', allLabel:'Tất cả cấp chống ẩm', shortLabel:'Chống ẩm',
+    getOptions: ()=> optionsFromRows(parseMoisture, (a,b)=>a.localeCompare(b)) },
+  { id:'glue', allLabel:'Tất cả loại keo', shortLabel:'Loại keo',
+    getOptions: ()=> optionsFromRows(parseGlue, (a,b)=>a.localeCompare(b)) },
+  { id:'quality', allLabel:'Tất cả cấp chất lượng', shortLabel:'Chất lượng',
+    getOptions: ()=> optionsFromRows(parseQuality, (a,b)=>a.localeCompare(b)) },
+];
+
+// true = filter "id" is inactive (no restriction, everything matches)
+function isFilterAll(id){ return filterState[id] === null; }
+
+// does "value" pass filter "id"? (unclassified/null values never match an active filter)
+function matchesFilter(id, value){
+  const state = filterState[id];
+  if(state === null) return true;
+  if(value === null || value === undefined) return false;
+  return state.has(value);
+}
+
+function renderMultiFilter(def){
+  const options = def.getOptions();
+  const btn = document.getElementById('msBtn-'+def.id);
+  const panel = document.getElementById('msPanel-'+def.id);
+  const state = filterState[def.id];
+  const allSelected = state === null || (options.length>0 && state.size===options.length);
+
+  if(options.length===0){
+    btn.textContent = def.allLabel;
+    btn.classList.remove('active');
+  } else if(allSelected){
+    btn.textContent = def.allLabel;
+    btn.classList.remove('active');
+  } else if(state.size===0){
+    btn.textContent = def.shortLabel + ': không chọn gì';
+    btn.classList.add('active');
+  } else if(state.size===1){
+    const opt = options.find(o=>state.has(o.value));
+    btn.textContent = def.shortLabel + ': ' + (opt ? opt.text : Array.from(state)[0]);
+    btn.classList.add('active');
+  } else {
+    btn.textContent = def.shortLabel + ' (' + state.size + ')';
+    btn.classList.add('active');
+  }
+  btn.innerHTML = btn.textContent.replace(/</g,'&lt;') + ' <span class="ms-caret">▾</span>';
+
+  let html = `<label class="ms-all"><input type="checkbox" data-role="all" ${allSelected?'checked':''}> Chọn tất cả</label><div class="ms-sep"></div>`;
+  if(options.length===0){
+    html += `<div class="ms-empty">Chưa có dữ liệu để lọc — hãy tải tồn kho trước.</div>`;
+  } else {
+    html += options.map(o=>{
+      const checked = state===null || state.has(o.value);
+      return `<label><input type="checkbox" data-value="${o.value}" ${checked?'checked':''}> ${o.text}</label>`;
+    }).join('');
+  }
+  panel.innerHTML = html;
+
+  const allCb = panel.querySelector('[data-role="all"]');
+  if(allCb) allCb.addEventListener('change', (e)=>{
+    filterState[def.id] = e.target.checked ? null : new Set();
+    renderMultiFilter(def);
+    renderOverview();
+  });
+  panel.querySelectorAll('[data-value]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      let cur = filterState[def.id];
+      if(cur === null) cur = new Set(options.map(o=>o.value));
+      else cur = new Set(cur); // clone before mutating
+      if(cb.checked) cur.add(cb.dataset.value); else cur.delete(cb.dataset.value);
+      filterState[def.id] = (cur.size === options.length) ? null : cur;
+      renderMultiFilter(def);
+      renderOverview();
+    });
+  });
+}
+
+function renderAllFilters(){
+  FILTER_DEFS.forEach(renderMultiFilter);
+}
+
+FILTER_DEFS.forEach(def=>{
+  document.getElementById('msBtn-'+def.id).addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const el = document.getElementById('ms-'+def.id);
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.ms-filter.open').forEach(f=>{
+      f.classList.remove('open');
+      const p = f.querySelector('.ms-panel');
+      if(p) p.classList.remove('align-right');
+    });
+    if(!wasOpen){
+      el.classList.add('open');
+      // đảm bảo bảng lọc không tràn ra ngoài màn hình (đặc biệt trên điện thoại,
+      // khi nút lọc nằm gần mép phải màn hình)
+      const panel = el.querySelector('.ms-panel');
+      if(panel){
+        panel.classList.remove('align-right');
+        const rect = panel.getBoundingClientRect();
+        if(rect.right > window.innerWidth - 8){
+          panel.classList.add('align-right');
+        }
+      }
+    }
+  });
+  document.getElementById('ms-'+def.id).addEventListener('click', (e)=> e.stopPropagation());
+});
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.ms-filter.open').forEach(f=>{
+    f.classList.remove('open');
+    const p = f.querySelector('.ms-panel');
+    if(p) p.classList.remove('align-right');
+  });
+});
+window.addEventListener('resize', ()=>{
+  document.querySelectorAll('.ms-filter.open').forEach(f=>f.classList.remove('open'));
+});
+
+// does an inventory row belong to a given catalog color? (cat is a CATALOG_COLORS entry)
+//
+// LOGIC ƯU TIÊN (đã sửa lỗi màu 630/Alutex bị gán nhầm):
+//   1) Mã màu (melamine, VD "BT1", "MK630N") là tín hiệu DUY NHẤT được tin cậy
+//      tuyệt đối — khớp theo "whole word" để tránh khớp nhầm bên trong mã dài hơn.
+//   2) KHÔNG còn dùng mã laminate/PL (VD "PL 1000 T") để gán dòng tồn kho vào
+//      màu, vì mã laminate hay lặp lại số giữa nhiều màu khác nhau (mã laminate
+//      "đồng số" nhưng khác màu melamine) — đây chính là nguyên nhân gây lỗi
+//      màu 630 bị dính nhầm với các dòng Alutex không thuộc về nó.
+//   3) Khớp theo TÊN màu (VD "Trắng"/"White") chỉ được dùng làm phương án dự
+//      phòng khi dòng tồn kho KHÔNG chứa bất kỳ mã màu nào khác trong catalogue
+//      — nếu dòng đã có sẵn một mã màu khác rõ ràng, tên trùng lặp ngẫu nhiên sẽ
+//      bị bỏ qua để không gán chồng 2 màu cùng lúc (double-count).
+function rowHasCatalogCode(t, cat){
+  const codeTok = norm(cat.code);
+  return !!codeTok && new RegExp('(^|[^a-z0-9])'+codeTok+'([^a-z0-9]|$)').test(t);
+}
+function rowMatchesCatalog(row, cat){
+  const t = rowText(row);
+
+  // 1) mã màu — tín hiệu ưu tiên cao nhất, luôn kiểm tra trước
+  if(rowHasCatalogCode(t, cat)) return true;
+
+  // 2) nếu dòng này đã khớp mã màu của một màu KHÁC rồi thì dừng — không cho
+  //    tên màu (fallback) gán chồng thêm màu thứ hai cho cùng 1 dòng tồn kho
+  const belongsToAnotherCode = CATALOG_COLORS.some(c => c.code!==cat.code && rowHasCatalogCode(t,c));
+  if(belongsToAnotherCode) return false;
+
+  // 3) fallback theo tên màu đầy đủ (chỉ khi không có mã màu nào khác xuất hiện)
+  const nameTok = norm(cat.name);
+  const altTok = cat.altname ? norm(cat.altname) : null;
+  if(nameTok && t.includes(nameTok)) return true;
+  if(altTok && t.includes(altTok)) return true;
+  return false;
+}
+
+/* =========================================================================
+   4. PARSING (Excel / CSV / Google Sheet CSV) — auto-detects header row
+   ========================================================================= */
+function rowsToInventory(matrix){
+  // find header row: first row containing a cell equal to "Mã vật tư" (normalized)
+  let headerIdx = -1, cols = {};
+  for(let r=0;r<matrix.length;r++){
+    const row = matrix[r] || [];
+    const found = {};
+    row.forEach((cell,ci)=>{
+      const n = norm(cell);
+      if(n === 'ma vat tu') found.maVatTu = ci;
+      if(n === 'ten vat tu') found.tenVatTu = ci;
+      if(n === 'dvt') found.dvt = ci;
+      if(n === 'ton cuoi') found.tonCuoi = ci;
+    });
+    if(found.tenVatTu !== undefined && found.tonCuoi !== undefined){
+      headerIdx = r; cols = found; break;
+    }
+  }
+  if(headerIdx === -1) return {ok:false, error:'Không tìm thấy dòng tiêu đề (cần có cột "Mã vật tư", "Tên vật tư", "Tồn cuối").'};
+
+  const out = [];
+  for(let r=headerIdx+1;r<matrix.length;r++){
+    const row = matrix[r] || [];
+    const tenVatTu = row[cols.tenVatTu];
+    if(tenVatTu === undefined || tenVatTu === null || String(tenVatTu).trim()==='') continue;
+    if(norm(tenVatTu) === 'tong cong') continue; // skip grand-total row
+    const maVatTu = cols.maVatTu !== undefined ? row[cols.maVatTu] : '';
+    const dvt = cols.dvt !== undefined ? row[cols.dvt] : '';
+    let tonCuoi = cols.tonCuoi !== undefined ? row[cols.tonCuoi] : 0;
+    tonCuoi = typeof tonCuoi === 'number' ? tonCuoi : parseFloat(String(tonCuoi).replace(/,/g,'')) || 0;
+    out.push({maVatTu: String(maVatTu||'').trim(), tenVatTu: String(tenVatTu).trim(), dvt: String(dvt||'').trim(), tonCuoi});
+  }
+  return {ok:true, rows: out};
+}
+
+function csvToMatrix(text){
+  // simple CSV parser handling quoted fields
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], n = text[i+1];
+    if(inQuotes){
+      if(c === '"' && n === '"'){ field+='"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else field += c;
+    } else {
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\r'){ /* skip */ }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+/* =========================================================================
+   5. DATA LOADING
+   ========================================================================= */
+function setStatus(kind, text){
+  const pill = document.getElementById('statusPill');
+  const t = document.getElementById('statusText');
+  pill.className = 'status-pill' + (kind ? ' '+kind : '');
+  t.textContent = text;
+}
+
+function extractSheetId(url){
+  const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : (/^[a-zA-Z0-9-_]{20,}$/.test(url.trim()) ? url.trim() : null);
+}
+
+async function loadFromGoogleSheet(){
+  const urlInput = document.getElementById('sheetUrl').value.trim();
+  const tabName = document.getElementById('sheetTabName').value.trim() || 'Main';
+  if(!urlInput){ setStatus('bad','Vui lòng dán link Google Sheet'); return; }
+  const id = extractSheetId(urlInput);
+  if(!id){ setStatus('bad','Không đọc được ID từ link, kiểm tra lại'); return; }
+
+  setStatus('', 'Đang tải…');
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  try{
+    const res = await fetch(csvUrl);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text = await res.text();
+    if(text.trim().startsWith('<')) throw new Error('Sheet chưa được chia sẻ ở chế độ xem công khai, hoặc sai tên tab.');
+    const matrix = csvToMatrix(text);
+    applyParsed(rowsToInventory(matrix), 'Google Sheet');
+    try{
+      localStorage.setItem('pnp_sheet_url', urlInput);
+      localStorage.setItem('pnp_sheet_tab', tabName);
+    }catch(e){}
+  }catch(err){
+    setStatus('bad', 'Lỗi tải Google Sheet: '+err.message);
+  }
+}
+
+function loadFromFile(file){
+  setStatus('', 'Đang đọc file…');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      let matrix;
+      if(/\.csv$/i.test(file.name)){
+        matrix = csvToMatrix(new TextDecoder('utf-8').decode(e.target.result));
+      } else {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const wsName = wb.SheetNames.includes('Main') ? 'Main' : wb.SheetNames[0];
+        matrix = XLSX.utils.sheet_to_json(wb.Sheets[wsName], {header:1, raw:true});
+      }
+      applyParsed(rowsToInventory(matrix), file.name);
+    }catch(err){
+      setStatus('bad','Lỗi đọc file: '+err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function applyParsed(result, sourceLabel){
+  if(!result.ok){ setStatus('bad', result.error); return; }
+  INVENTORY = result.rows;
+  dataLoadedAt = new Date();
+  setStatus('ok', `Đã tải ${INVENTORY.length.toLocaleString('vi-VN')} dòng từ ${sourceLabel} · ${dataLoadedAt.toLocaleTimeString('vi-VN')}`);
+  renderAllFilters();
+  renderOverview();
+  runSearch();
+}
+
+/* =========================================================================
+   6. UI WIRING — tabs, drop zone, buttons
+   ========================================================================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('loadSheetBtn').addEventListener('click', loadFromGoogleSheet);
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+// dropZone is a <label for="fileInput">, so tapping/clicking it opens the
+// file picker natively — no JS .click() forwarding needed (that forwarding
+// is exactly what fails silently in some iPadOS Chrome/Safari configurations).
+fileInput.addEventListener('change', (e)=>{
+  if(e.target.files[0]){
+    document.getElementById('fileName').textContent = e.target.files[0].name;
+    loadFromFile(e.target.files[0]);
+  }
+});
+['dragenter','dragover'].forEach(ev=> dropZone.addEventListener(ev, e=>{ e.preventDefault(); dropZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev=> dropZone.addEventListener(ev, e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); }));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if(f){ document.getElementById('fileName').textContent = f.name; loadFromFile(f); }
+});
+
+// Fallback button (shown only on touch devices): explicit user-gesture click
+// that calls .click() directly, in case the <label for> delegation itself
+// is the thing being blocked. A second, independent trigger path costs
+// nothing and fixes cases where one of the two mechanisms is blocked.
+const fileInputFallbackBtn = document.getElementById('fileInputFallbackBtn');
+if(fileInputFallbackBtn){
+  fileInputFallbackBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    fileInput.click();
+  });
+}
+
+// Quick link to switch to the Google Sheet tab from inside the iPad note
+const gotoSheetTabBtn = document.getElementById('gotoSheetTabBtn');
+if(gotoSheetTabBtn){
+  gotoSheetTabBtn.addEventListener('click', ()=>{
+    document.querySelector('.tab-btn[data-tab="sheet"]').click();
+    document.getElementById('sheetUrl').focus();
+  });
+}
+
+// restore last-used sheet link
+try{
+  const savedUrl = localStorage.getItem('pnp_sheet_url');
+  const savedTab = localStorage.getItem('pnp_sheet_tab');
+  if(savedUrl) document.getElementById('sheetUrl').value = savedUrl;
+  if(savedTab) document.getElementById('sheetTabName').value = savedTab;
+}catch(e){}
+
+/* =========================================================================
+   7. SEARCH
+   ========================================================================= */
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', runSearch);
+
+// quick chips: a handful of common colors to demo
+const CHIP_SAMPLES = ["Brown Nordic Elm BT1","Cornwall Oak BP4","Black AT1","Cotone BC9","Emperor Walnut BK3"];
+const chipsWrap = document.getElementById('chips');
+CHIP_SAMPLES.forEach(label=>{
+  const el = document.createElement('span');
+  el.className='chip'; el.textContent = label;
+  el.addEventListener('click', ()=>{ searchInput.value = label; runSearch(); });
+  chipsWrap.appendChild(el);
+});
+
+function qtyClass(row){
+  if(row.tonCuoi <= 0) return 'zero';
+  if(row.tonCuoi < 20) return 'low';
+  return 'good';
+}
+
+function runSearch(){
+  const raw = searchInput.value.trim();
+  const colorsWrap = document.getElementById('resultsColorsWrap');
+  const rowsWrap = document.getElementById('resultsRowsWrap');
+  const emptyState = document.getElementById('emptyState');
+
+  if(raw.length < 2){
+    colorsWrap.style.display='none';
+    rowsWrap.style.display='none';
+    emptyState.style.display='block';
+    document.getElementById('searchSub').textContent = `Nhập ít nhất 2 ký tự để tìm trong ${CATALOG_COLORS.length} màu catalogue và toàn bộ mã tồn kho.`;
+    return;
+  }
+
+  const qTok = tokens(raw);
+  const matchedColors = CATALOG_COLORS.filter(c => catalogMatchesQuery(c, qTok));
+  const matchedRows = INVENTORY.filter(r => rowMatchesQuery(r, qTok));
+
+  document.getElementById('searchSub').textContent =
+    `${matchedColors.length} màu catalogue khớp · ${matchedRows.length} dòng tồn kho khớp` +
+    (INVENTORY.length===0 ? '  (chưa tải dữ liệu tồn kho — chỉ tìm trong catalogue)' : '');
+
+  emptyState.style.display = (matchedColors.length===0 && matchedRows.length===0) ? 'block' : 'none';
+  if(emptyState.style.display==='block'){
+    emptyState.innerHTML = `Không tìm thấy gì khớp với "<b>${raw.replace(/</g,'&lt;')}</b>". Thử gõ ngắn hơn, ví dụ chỉ mã màu.`;
+  }
+
+  // ---- render matched catalog colors ----
+  if(matchedColors.length){
+    colorsWrap.style.display='block';
+    document.getElementById('colorsCount').textContent = matchedColors.length + ' màu';
+    const grid = document.getElementById('colorsGrid');
+    grid.innerHTML = '';
+    matchedColors.forEach(cat=>{
+      const rows = INVENTORY.filter(r=>rowMatchesCatalog(r,cat));
+      const total = rows.reduce((s,r)=>s+r.tonCuoi,0);
+      const realFinishes = Array.from(new Set(rows.map(r=>parseFinish(r.tenVatTu)).filter(Boolean)));
+      const finishText = realFinishes.length ? realFinishes.join(', ') : (cat.catalogFinishes||[]).join(', ');
+      const card = document.createElement('div');
+      card.className = 'color-card';
+      let badge = '<span class="badge none">Chưa khớp DL</span>';
+      if(INVENTORY.length){
+        if(rows.length===0) badge = '<span class="badge none">Không có SKU</span>';
+        else if(total<=0) badge = '<span class="badge bad">Hết hàng</span>';
+        else if(total<20) badge = '<span class="badge warn">Sắp hết</span>';
+        else badge = '<span class="badge ok">Còn hàng</span>';
+      }
+      card.innerHTML = `
+        <div class="swatch" style="background:${cat.hex}"><span class="plcode">${cat.code}</span></div>
+        <div class="body">
+          <p class="name">${cat.displayName}</p>
+          <p class="meta">${cat.code}${finishText? ' · '+finishText : ''}</p>
+          <div class="stockline">
+            <span class="rowcount">${rows.length} SKU${INVENTORY.length? ' · tổng '+total.toLocaleString('vi-VN') : ''}</span>
+            ${badge}
+          </div>
+        </div>`;
+      card.addEventListener('click', ()=>{ searchInput.value = cat.displayName + ' ' + cat.code; runSearch(); scrollToOverview(cat.id); });
+      grid.appendChild(card);
+    });
+  } else {
+    colorsWrap.style.display='none';
+  }
+
+  // ---- render matched inventory rows ----
+  if(matchedRows.length){
+    rowsWrap.style.display='block';
+    document.getElementById('rowsCount').textContent = matchedRows.length + ' dòng';
+    const tbody = document.querySelector('#rowsTable tbody');
+    tbody.innerHTML = '';
+    matchedRows
+      .slice()
+      .sort((a,b)=> b.tonCuoi - a.tonCuoi)
+      .forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="sku">${r.maVatTu}</td>
+          <td>${r.tenVatTu}</td>
+          <td class="unit">${r.dvt}</td>
+          <td class="qty ${qtyClass(r)}">${r.tonCuoi.toLocaleString('vi-VN')}</td>`;
+        tbody.appendChild(tr);
+      });
+  } else {
+    rowsWrap.style.display='none';
+  }
+}
+
+/* =========================================================================
+   8. OVERVIEW — all 40 colors, aggregated stock, expandable
+   ========================================================================= */
+// Các bộ lọc áp theo TỪNG DÒNG tồn kho (đọc trực tiếp từ tên vật tư của dòng đó,
+// không đọc từ catalogue tĩnh) — đây là điểm mấu chốt để 1 mã màu (VD MK630N)
+// vẫn hiện đúng khi nó thực tế tồn tại ở bề mặt/độ dày/khổ ván khác với catalogue.
+const ROW_FILTER_IDS = ['thickness','type','moisture','size','glue','quality'];
+function rowPassesExtraFilters(row){
+  if(!isFilterAll('thickness') && !matchesFilter('thickness', parseThickness(row.tenVatTu))) return false;
+  if(!isFilterAll('type')      && !matchesFilter('type', parseType(row.tenVatTu))) return false;
+  if(!isFilterAll('moisture')  && !matchesFilter('moisture', parseMoisture(row.tenVatTu))) return false;
+  if(!isFilterAll('size')      && !matchesFilter('size', parseSheetSize(row.tenVatTu))) return false;
+  if(!isFilterAll('glue')      && !matchesFilter('glue', parseGlue(row.tenVatTu))) return false;
+  if(!isFilterAll('quality')   && !matchesFilter('quality', parseQuality(row.tenVatTu))) return false;
+  if(!isFilterAll('finish')    && !matchesFilter('finish', parseFinish(row.tenVatTu))) return false;
+  return true;
+}
+
+function computeOverviewData(){
+  // 1 thẻ / 1 mã màu (CATALOG_COLORS) — không còn hiện trùng 2 thẻ cho cùng
+  // 1 mã màu như trước (VD "White MK630N" từng bị tách thành 2 thẻ Matt/Pearl
+  // dùng chung 1 mã, khiến tổng tồn kho bị nhân đôi và lộ đúng lỗi 630/Alutex).
+  return CATALOG_COLORS
+    .map(cat=>{
+      // luôn bắt đầu từ đúng các dòng khớp MÃ MÀU của riêng màu này (ưu tiên mã màu)
+      const allRows = INVENTORY.filter(r=>rowMatchesCatalog(r,cat));
+
+      // rồi lọc thêm theo các điều kiện đang tích chọn trên thanh overview-toolbar,
+      // trong đó "mã khuôn/mặt" (finish) đọc theo TỪNG DÒNG thực tế, không theo
+      // bề mặt tĩnh khai báo sẵn trong catalogue
+      const rows = allRows.filter(rowPassesExtraFilters);
+
+      const total = rows.reduce((s,r)=>s+r.tonCuoi,0);
+      let status = 'none';
+      if(INVENTORY.length && rows.length){
+        status = total<=0 ? 'bad' : (total<20 ? 'warn' : 'ok');
+      }
+
+      const extraFilterActive = ROW_FILTER_IDS.concat('finish').some(id=>!isFilterAll(id));
+      const noMatchForFilter = extraFilterActive && allRows.length>0 && rows.length===0;
+
+      // danh sách mã khuôn/mặt thực tế đang có trong các dòng khớp (đọc theo từng dòng)
+      const realFinishes = Array.from(new Set(rows.map(r=>parseFinish(r.tenVatTu)).filter(Boolean)));
+      const finishText = realFinishes.length
+        ? realFinishes.join(', ')
+        : (cat.catalogFinishes||[]).join(', ');
+
+      return {cat, rows, total, status, noMatchForFilter, finishText};
+    })
+    .filter(d => matchesFilter('status', d.status));
+}
+
+function statusLabel(s){
+  return {bad:'Hết hàng', warn:'Sắp hết', ok:'Còn hàng', none:'Chưa khớp DL'}[s];
+}
+
+let openRowId = null;
+
+function renderOverview(){
+  const data = computeOverviewData();
+  const sortVal = document.getElementById('ovSort').value;
+
+  let list = data;
+  if(sortVal==='stock-asc') list = list.slice().sort((a,b)=>a.total-b.total);
+  else if(sortVal==='stock-desc') list = list.slice().sort((a,b)=>b.total-a.total);
+  else if(sortVal==='name') list = list.slice().sort((a,b)=>a.cat.name.localeCompare(b.cat.name));
+
+  document.getElementById('ovCount').textContent = `${list.length}/${CATALOG_COLORS.length} màu`;
+
+  const wrap = document.getElementById('overviewList');
+  wrap.innerHTML = '';
+  list.forEach(d=>{
+    const rowEl = document.createElement('div');
+    rowEl.className = 'ov-row' + (openRowId===d.cat.id ? ' open' : '');
+    rowEl.id = 'ov-'+d.cat.id;
+    const totalText = INVENTORY.length ? d.total.toLocaleString('vi-VN') : '—';
+    rowEl.innerHTML = `
+      <div class="head">
+        <div class="ov-swatch" style="background:${d.cat.hex}"></div>
+        <div>
+          <div class="ov-name">${d.cat.displayName}</div>
+          <div class="ov-code">${d.cat.code}${d.cat.plList && d.cat.plList.length? ' · '+d.cat.plList.join(', '):''}</div>
+        </div>
+        <div class="ov-finish">${d.finishText || '—'}</div>
+        <div class="ov-total">${totalText}</div>
+        <span class="badge ${d.status}">${statusLabel(d.status)}</span>
+        <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div class="ov-detail"></div>`;
+    rowEl.querySelector('.head').addEventListener('click', ()=>{
+      openRowId = (openRowId===d.cat.id) ? null : d.cat.id;
+      renderOverview();
+    });
+    if(openRowId===d.cat.id){
+      const detail = rowEl.querySelector('.ov-detail');
+      if(d.rows.length===0){
+        detail.innerHTML = d.noMatchForFilter
+          ? `<p class="hint" style="margin:8px 0 4px;">Màu này có dữ liệu tồn kho, nhưng không có dòng nào khớp các điều kiện đang lọc (loại ván / cấp chống ẩm / loại keo / độ dày / khổ ván / mã khuôn-mặt / cấp chất lượng). Thử bỏ bớt điều kiện lọc.</p>`
+          : `<p class="hint" style="margin:8px 0 4px;">Không tìm thấy dòng vật tư nào khớp với màu này trong dữ liệu tồn kho hiện tại.</p>`;
+      } else {
+        const rowsHtml = d.rows
+          .slice().sort((a,b)=>b.tonCuoi-a.tonCuoi)
+          .map(r=>`<tr><td class="sku">${r.maVatTu}</td><td>${r.tenVatTu}</td><td class="unit">${r.dvt}</td><td class="qty ${qtyClass(r)}">${r.tonCuoi.toLocaleString('vi-VN')}</td></tr>`)
+          .join('');
+        detail.innerHTML = `<div class="table-scroll"><table class="data"><thead><tr><th>Mã vật tư</th><th>Tên vật tư</th><th>ĐVT</th><th style="text-align:right">Tồn</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+      }
+    }
+    wrap.appendChild(rowEl);
+  });
+}
+
+function scrollToOverview(catId){
+  openRowId = catId;
+  renderOverview();
+  const el = document.getElementById('ov-'+catId);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+document.getElementById('ovSort').addEventListener('change', renderOverview);
+
+/* =========================================================================
+   9. INIT
+   ========================================================================= */
+renderAllFilters();
+renderOverview();
+runSearch();
+</script>
+</body>
+</html>
