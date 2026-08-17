@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PANEL PLUS Việt Nam · Lập đơn hàng nhanh</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --ink-soft:#4a4740;
+    --paper:#f4f1ea;
+    --panel:#ffffff;
+    --line:#e2ddd0;
+    --blue:#135ba1;
+    --blue-deep:#0c3f70;
+    --wood:#8b6a4c;
+    --wood-deep:#5c4531;
+    --ok:#3f7d4f;
+    --ok-bg:#e7f2e9;
+    --warn:#b1791f;
+    --warn-bg:#faf0dd;
+    --bad:#a83b3b;
+    --bad-bg:#f8e8e6;
+    --radius:10px;
+    --mono: 'SFMono-Regular', ui-monospace, Consolas, Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;overflow-x:hidden;width:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    padding-bottom:80px;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--blue);}
+
+  header.top{
+    background:linear-gradient(135deg,var(--blue-deep) 0%, var(--blue) 55%, #1c7fbf 100%);
+    color:#fff;
+    padding:28px 24px 84px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-60px; bottom:-90px;
+    width:320px;height:320px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+  }
+  .top-inner{max-width:1180px;margin:0 auto;position:relative;z-index:1;}
+  .brandrow{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .brand-badge{
+    background:#fff;color:var(--blue-deep);
+    font-weight:800;font-size:13px;letter-spacing:.06em;
+    padding:6px 10px;border-radius:6px;
+  }
+  .brand-sub{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;}
+  .nav-link{
+    margin-left:auto;font-size:12.5px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.14);padding:6px 12px;border-radius:999px;
+    text-decoration:none;white-space:nowrap;
+  }
+  .nav-link:hover{background:rgba(255,255,255,.24);}
+  h1{font-size:clamp(22px,3.4vw,32px);margin:0 0 6px;font-weight:800;letter-spacing:-.01em;}
+  .lede{opacity:.9;max-width:640px;font-size:14.5px;margin:0;}
+
+  .wrap{max-width:1180px;margin:-56px auto 0;padding:0 24px;position:relative;z-index:2;width:100%;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 1px 2px rgba(28,26,23,.04), 0 8px 24px -12px rgba(28,26,23,.12);
+    min-width:0;
+  }
+
+  .source-card{padding:20px 22px;margin-bottom:18px;}
+  .source-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .source-head h2{font-size:15px;margin:0;font-weight:700;}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:600;
+    padding:4px 10px;border-radius:999px;
+    background:var(--warn-bg);color:var(--warn);
+    white-space:nowrap;
+  }
+  .status-pill.ok{background:var(--ok-bg);color:var(--ok);}
+  .status-pill.bad{background:var(--bad-bg);color:var(--bad);}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none;}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+  .tab-btn{
+    appearance:none;border:none;background:none;cursor:pointer;
+    padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+    font-family:inherit;
+  }
+  .tab-btn.active{color:var(--blue-deep);border-bottom-color:var(--blue);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .field-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  .field{flex:1 1 260px;min-width:0;position:relative;}
+  .field.small{flex:0 0 160px;min-width:0;}
+  .field.tiny{flex:0 0 120px;min-width:0;}
+  .field.wide{flex:2 1 320px;min-width:0;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;}
+  input[type=text], input[type=url], input[type=number], input[type=date], select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:9px 11px;
+    font-size:13.5px;
+    font-family:inherit;
+    background:#fbfaf7;
+    color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  input[readonly]{background:#f0ede4;color:#6b665c;}
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    background:var(--blue);color:#fff;
+    font-weight:700;font-size:13.5px;
+    padding:10px 18px;border-radius:7px;
+    font-family:inherit;
+    white-space:nowrap;
+    min-height:40px;
+  }
+  .btn:hover{background:var(--blue-deep);}
+  .btn.ghost{
+    background:transparent;color:var(--blue-deep);
+    border:1px solid var(--line);
+  }
+  .btn.ghost:hover{background:#eef3f8;}
+  .btn.danger{color:var(--bad);border-color:#eccfc9;}
+  .btn.danger:hover{background:var(--bad-bg);}
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+  .hint{font-size:12px;color:#847e72;margin-top:8px;line-height:1.5;}
+  .hint code{background:#eeeae0;padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:11.5px;}
+
+  .drop{
+    display:block;
+    border:1.5px dashed var(--line);
+    border-radius:9px;
+    padding:22px;
+    text-align:center;
+    background:#fbfaf7;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .drop:hover, .drop.dragover{border-color:var(--blue); background:#f0f5fa;}
+  .drop svg{opacity:.5;margin-bottom:8px;}
+  .drop .fname{font-weight:700;color:var(--blue-deep);margin-top:6px;font-size:13px;}
+  .visually-hidden-input{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+  #fileInputFallbackBtn{display:none;}
+  @media (hover:none) and (pointer:coarse){ #fileInputFallbackBtn{display:block;} }
+
+  .ipad-note{
+    margin-top:14px;padding:14px 16px;border-radius:9px;
+    background:var(--warn-bg);border:1px solid #ecd9ae;
+    font-size:12.5px;color:var(--ink-soft);line-height:1.55;
+  }
+  .ipad-note ol{margin:0 0 10px;padding-left:18px;}
+  .ipad-note li{margin-bottom:4px;}
+  .file-only-warn{
+    margin-top:14px;padding:12px 14px;border-radius:9px;
+    background:var(--bad-bg);border:1px solid #eccfc9;color:var(--bad);
+    font-size:12.5px;font-weight:600;display:none;
+  }
+
+  .section-title{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin:26px 2px 10px;flex-wrap:wrap;gap:8px;
+  }
+  .section-title h2{font-size:15px;margin:0;font-weight:800;letter-spacing:-.01em;}
+  .section-title .sub{font-size:12.5px;color:#847e72;font-weight:600;}
+
+  /* ---------- Order header info ---------- */
+  .order-info{padding:20px 22px;margin-bottom:18px;}
+  .order-info .field-row + .field-row{margin-top:10px;}
+
+  /* ---------- Line item cards ---------- */
+  .line-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    padding:14px 14px 12px;margin-bottom:10px;
+  }
+  .line-card .line-num{
+    font-size:11px;font-weight:800;color:#a8a190;letter-spacing:.05em;
+    margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;
+  }
+  .line-grid{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
+  .sku-input{font-family:var(--mono);}
+  .sku-suggest{
+    display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:30;
+    max-height:230px;overflow-y:auto;background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;
+    box-shadow:0 10px 28px -10px rgba(28,26,23,.3);
+  }
+  .sku-suggest.open{display:block;}
+  .sku-suggest .opt{
+    padding:8px 10px;cursor:pointer;border-bottom:1px solid #f0ede4;font-size:12.5px;
+  }
+  .sku-suggest .opt:last-child{border-bottom:none;}
+  .sku-suggest .opt:hover, .sku-suggest .opt.hi{background:#eef5fb;}
+  .sku-suggest .opt .sku{font-family:var(--mono);font-weight:700;color:var(--blue-deep);font-size:11.5px;}
+  .sku-suggest .opt .nm{color:var(--ink-soft);font-size:11.5px;}
+  .sku-suggest .opt .stk{float:right;font-size:11px;color:#847e72;}
+  .sku-suggest .empty{padding:10px;font-size:12px;color:#847e72;}
+
+  .price-hint{font-size:11px;margin-top:4px;line-height:1.4;}
+  .price-hint.auto{color:var(--ok);}
+  .price-hint.manual{color:var(--warn);}
+
+  .tax-select{width:100%;}
+  .tax-custom{margin-top:6px;}
+
+  .line-total-box{
+    flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;
+    margin-top:6px;padding-top:10px;border-top:1px dashed var(--line);
+  }
+  .line-total-box .lbl{font-size:12px;color:#847e72;font-weight:600;}
+  .line-total-box .val{font-size:16px;font-weight:800;color:var(--blue-deep);font-variant-numeric:tabular-nums;}
+  .remove-line-btn{font-size:12px;padding:6px 10px;min-height:30px;}
+
+  .add-line-row{display:flex;justify-content:center;margin:14px 0 30px;}
+
+  /* ---------- Totals ---------- */
+  .totals-card{padding:20px 22px;margin-bottom:24px;}
+  .totals-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 0;font-size:13.5px;
+  }
+  .totals-row .lbl{color:var(--ink-soft);}
+  .totals-row .val{font-weight:700;font-variant-numeric:tabular-nums;}
+  .totals-row.grand{
+    border-top:2px solid var(--ink);margin-top:6px;padding-top:14px;
+  }
+  .totals-row.grand .lbl{font-size:15px;font-weight:800;color:var(--ink);}
+  .totals-row.grand .val{font-size:22px;font-weight:900;color:var(--blue-deep);}
+
+  .action-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:40px;}
+
+  footer{max-width:1180px;margin:36px auto 0;padding:0 24px;font-size:12px;color:#a8a190;text-align:center;}
+
+  @media (max-width:640px){
+    .wrap{padding:0 12px;}
+    header.top{padding:20px 14px 70px;}
+    .top-inner{padding:0;}
+    h1{font-size:22px;}
+    .lede{font-size:13.5px;}
+    .nav-link{margin-left:0;}
+    .source-card, .search-card, .order-info, .totals-card{padding:16px 14px;}
+    .field-row{gap:8px;}
+    .field, .field.small, .field.tiny, .field.wide{flex:1 1 100%;}
+    .btn{width:100%;}
+    .tabs{gap:2px;}
+    .tab-btn{padding:10px 10px;font-size:13px;min-height:40px;}
+    .line-grid{gap:8px;}
+    .action-row{justify-content:stretch;}
+    .action-row .btn{flex:1 1 auto;}
+  }
+
+  @media (hover:none) and (pointer:coarse){
+    .btn, .tab-btn{min-height:40px;}
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    header.top, .source-card, .add-line-row, .action-row, .remove-line-btn,
+    .nav-link, .sku-suggest, footer, .hint{display:none !important;}
+    body{padding:0;background:#fff;}
+    .wrap{margin:0;padding:0;max-width:100%;}
+    .line-card{break-inside:avoid;border:1px solid #ccc;}
+    input, select{border:none !important;background:none !important;padding:2px 0 !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brandrow">
+      <span class="brand-badge">PANEL PLUS</span>
+      <span class="brand-sub">Việt Nam · Lập đơn hàng nhanh</span>
+      <a class="nav-link" href="./index.html">← Tra cứu tồn kho</a>
+    </div>
+    <h1>Lập đơn hàng nhanh</h1>
+    <p class="lede">Điền mã vật tư để tự nhảy tên sản phẩm và đơn giá theo dữ liệu tồn kho / bảng giá. Có thể thêm, xoá dòng và tự tính thuế, phí vận chuyển.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ DATA SOURCE ============ -->
+  <section class="card source-card">
+    <div class="source-head">
+      <h2>Nguồn dữ liệu (Tồn kho · Bảng giá · Phân loại màu)</h2>
+      <span class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText">Chưa có dữ liệu</span></span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="sheet">Liên kết Google Sheet</button>
+      <button class="tab-btn" data-tab="file">Tải file Excel lên</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-sheet">
+      <div class="field-row">
+        <div class="field wide">
+          <label for="sheetUrl">Link Google Sheet (chia sẻ ở chế độ "Bất kỳ ai có link – Người xem")</label>
+          <input type="url" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…/edit" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field small">
+          <label for="tabTonKho">Tên tab tồn kho</label>
+          <input type="text" id="tabTonKho" value="TonKho" />
+        </div>
+        <div class="field small">
+          <label for="tabBangGia">Tên tab bảng giá</label>
+          <input type="text" id="tabBangGia" value="BangGia" />
+        </div>
+        <div class="field small">
+          <label for="tabPhanLoaiMau">Tên tab phân loại màu</label>
+          <input type="text" id="tabPhanLoaiMau" value="PhanLoaiMau" />
+        </div>
+        <button class="btn" id="loadSheetBtn">Tải dữ liệu</button>
+      </div>
+      <p class="hint">
+        Dùng đúng 1 Google Sheet có đủ 3 tab: <code>TonKho</code> (Mã vật tư / Tên vật tư / Đvt / Tồn cuối),
+        <code>BangGia</code> (Loai_Van / Cap_Keo / Nhom_Mau / Do_Day_mm / Kho / Don_Gia_VND / Ghi_Chu) và
+        <code>PhanLoaiMau</code> (Ma_Mau / HPL_Code / Phan_Loai) — đúng cấu trúc file gốc bạn đang dùng cho Apps Script tra cứu giá.
+        Nếu thiếu tab bảng giá, công cụ vẫn tra được tên sản phẩm nhưng không tự tính được đơn giá.
+      </p>
+    </div>
+
+    <div class="tab-panel" id="tab-file">
+      <label class="drop" id="dropZone" for="fileInput">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5c584e" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <div>Kéo thả file <b>.xlsx</b> vào đây, hoặc bấm để chọn file</div>
+        <div class="fname" id="fileName"></div>
+      </label>
+      <input type="file" id="fileInput"
+        accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+        class="visually-hidden-input" />
+      <button type="button" class="btn ghost" id="fileInputFallbackBtn" style="width:100%;margin-top:8px;">Không mở được hộp thoại chọn file? Bấm vào đây</button>
+      <p class="hint">
+        Dùng đúng file Excel gốc có đủ 3 sheet <code>TonKho</code> (hoặc <code>Main</code>), <code>BangGia</code>, <code>PhanLoaiMau</code> — công cụ tự tìm đúng sheet theo tên, không cần chỉnh sửa gì trước khi tải lên.
+      </p>
+      <div class="ipad-note" id="ipadNote">
+        <p style="margin:0 0 8px;font-weight:700;color:var(--warn);">⚠️ Trên iPad (Chrome/Safari) mà nút chọn file không mở hộp thoại, hoặc bấm "Tải dữ liệu" ở tab Google Sheet báo lỗi "Failed to fetch"?</p>
+        <p style="margin:0 0 10px;">Đây là do trang đang được mở trực tiếp từ file tải về (<code>file://</code>) thay vì từ một địa chỉ web — trình duyệt trên iPad chặn cả việc mở hộp thoại chọn file lẫn việc tải dữ liệu từ Google Sheet trong trường hợp này. Cách sửa: đưa file HTML này lên một địa chỉ web thật (ví dụ GitHub Pages, giống như trang tra cứu tồn kho), rồi mở qua link <code>https://...</code> đó thay vì mở file trực tiếp.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ORDER HEADER INFO ============ -->
+  <section class="card order-info">
+    <div class="field-row">
+      <div class="field">
+        <label for="ordCustomer">Khách hàng</label>
+        <input type="text" id="ordCustomer" placeholder="Tên công ty / cá nhân khách hàng" />
+      </div>
+      <div class="field small">
+        <label for="ordCode">Mã đơn hàng</label>
+        <input type="text" id="ordCode" />
+      </div>
+      <div class="field small">
+        <label for="ordDate">Ngày lập</label>
+        <input type="date" id="ordDate" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field wide">
+        <label for="ordShipTo">Vận chuyển đến (địa chỉ giao hàng)</label>
+        <input type="text" id="ordShipTo" placeholder="Địa chỉ nhận hàng…" />
+      </div>
+      <div class="field small">
+        <label for="ordShipFee">Đơn giá vận chuyển (VNĐ)</label>
+        <input type="number" id="ordShipFee" min="0" step="1000" value="0" />
+      </div>
+      <div class="field small">
+        <label for="ordSaleRep">Người lập đơn</label>
+        <input type="text" id="ordSaleRep" placeholder="Tên nhân viên" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ORDER LINES ============ -->
+  <div class="section-title">
+    <h2>Danh sách sản phẩm</h2>
+    <span class="sub" id="lineCount">0 dòng</span>
+  </div>
+  <div id="linesWrap"></div>
+  <div class="add-line-row">
+    <button class="btn" id="addLineBtn">+ Thêm dòng sản phẩm</button>
+  </div>
+
+  <!-- ============ TOTALS ============ -->
+  <section class="card totals-card">
+    <div class="totals-row">
+      <span class="lbl">Tổng tiền hàng (trước thuế)</span>
+      <span class="val" id="totSubtotal">0 ₫</span>
+    </div>
+    <div class="totals-row">
+      <span class="lbl">Tổng tiền thuế</span>
+      <span class="val" id="totTax">0 ₫</span>
+    </div>
+    <div class="totals-row">
+      <span class="lbl">Phí vận chuyển</span>
+      <span class="val" id="totShip">0 ₫</span>
+    </div>
+    <div class="totals-row grand">
+      <span class="lbl">TỔNG CỘNG THANH TOÁN</span>
+      <span class="val" id="totGrand">0 ₫</span>
+    </div>
+  </section>
+
+  <div class="action-row">
+    <button class="btn ghost" id="clearOrderBtn">Xoá toàn bộ đơn</button>
+    <button class="btn" id="printBtn">In / Xuất PDF đơn hàng</button>
+  </div>
+
+</div>
+
+<footer>PANEL PLUS Việt Nam · Công cụ nội bộ · Giá tự động chỉ mang tính gợi ý, luôn kiểm tra lại trước khi chốt đơn.</footer>
+
+<script>
+/* =========================================================================
+   0. TEXT NORMALIZATION
+   ========================================================================= */
+const VN_MAP = [
+  [/[àáảãạăằắẳẵặâầấẩẫậ]/g,'a'],[/[đ]/g,'d'],
+  [/[èéẻẽẹêềếểễệ]/g,'e'],[/[ìíỉĩị]/g,'i'],
+  [/[òóỏõọôồốổỗộơờớởỡợ]/g,'o'],[/[ùúủũụưừứửữự]/g,'u'],
+  [/[ỳýỷỹỵ]/g,'y']
+];
+function norm(s){
+  if(!s) return "";
+  s = String(s).toLowerCase();
+  VN_MAP.forEach(([re,rep])=> s = s.replace(re,rep));
+  s = s.replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  return s;
+}
+function fmtVND(n){
+  n = Math.round(Number(n)||0);
+  return n.toLocaleString('vi-VN') + ' ₫';
+}
+
+/* =========================================================================
+   1. STATE
+   ========================================================================= */
+let TONKHO = [];      // [{maVatTu, tenVatTu, dvt, tonCuoi}]
+let BANGGIA = [];      // [{loaiVan, capKeo, nhomMau, doDay, kho, gia, ghiChu}]
+let PHANLOAIMAU = [];   // [{maMau, phanLoai}]  sorted longest maMau first
+let TONKHO_BY_SKU = new Map(); // norm(maVatTu) -> row
+
+/* =========================================================================
+   2. ATTRIBUTE PARSING FROM PRODUCT NAME
+   (cùng logic với công cụ tra cứu tồn kho, tái sử dụng để đoán thuộc tính)
+   ========================================================================= */
+const MOISTURE_RULES = [
+  { label:'HMR V313', test:/hmr\s?v\s?313/ },
+  { label:'HMR',       test:/\bhmr\b/ },
+];
+function parseMoisture(text){
+  const t = norm(text||'');
+  for(const rule of MOISTURE_RULES){ if(rule.test.test(t)) return rule.label; }
+  return null; // null = không chống ẩm
+}
+
+const GLUE_RULES = [
+  { label:'Super E0', test:/su[pb]+er\s?e0/ },
+  { label:'CarbP2',   test:/carb\s?p2/ },
+  { label:'EN717',    test:/en\s?717/ },
+  { label:'E2',        test:/\be2\b/ },
+  { label:'E1',        test:/\be1\b/ },
+  { label:'E0',        test:/\be0\b/ },
+];
+function parseGlue(text){
+  const t = norm(text||'');
+  for(const rule of GLUE_RULES){ if(rule.test.test(t)) return rule.label; }
+  return null;
+}
+
+function parseThicknessMm(text){
+  if(!text) return null;
+  const m = String(text).match(/(\d{1,2}(?:[.,]\d{1,2})?)\s*mm\b/i);
+  return m ? parseFloat(m[1].replace(',', '.')) : null;
+}
+
+function parseSheetSize(text){
+  if(!text) return null;
+  const m = String(text).match(/(\d{3,4})\s*[x×]\s*(\d{3,4})/i);
+  return m ? (m[1] + 'x' + m[2]) : null;
+}
+
+function isPurplecore(text){
+  return /purple\s?core/.test(norm(text||''));
+}
+
+// Danh sách từ khoá "bề mặt/mã khuôn" — nếu tên vật tư chứa bất kỳ từ nào ở
+// đây, gần như chắc chắn đây là ván ĐÃ PHỦ melamine/HPL (không phải cốt thô),
+// bất kể có tra được đúng "nhóm màu" trong PhanLoaiMau hay không. Điều này để
+// tránh lỗi nguy hiểm: nhận nhầm ván đã phủ màu thành ván thô rồi báo giá thấp
+// hơn hẳn giá thực tế (vì catalogue PhanLoaiMau chỉ có ~40 mã, không phủ hết
+// toàn bộ mã màu thực tế đang dùng).
+const FINISH_HINT_RULES = [
+  /iconic\s?wood/, /cross\s?metal/, /fino\s?metal/, /stipple\s?matt/, /gun\s?metal/,
+  /mirror\s?gloss/, /matt\s?woodgrain/, /super\s?matt/, /mini\s?pearl/, /fine\s?matt/,
+  /\bplaster\b/, /\bconcrete\b/, /\bcrosscut\b/, /\btextile\b/, /\bcanvas\b/,
+  /\bwoodgrain\b/, /\bfinoline\b/, /\bwoodrift\b/, /\balutex\b/, /\bleather\b/,
+  /\bdotline\b/, /\bmatt\b/, /\bpearl\b/
+];
+function hasFinishHint(text){
+  const t = norm(text||'');
+  return FINISH_HINT_RULES.some(re => re.test(t));
+}
+
+// Xác định "nhóm màu" bằng cách dò xem tên vật tư có chứa Mã màu nào trong
+// PHANLOAIMAU không (ưu tiên mã màu dài nhất khớp được, để tránh nhận nhầm
+// mã ngắn là con của mã dài hơn).
+function findNhomMau(tenVatTu){
+  const t = norm(tenVatTu);
+  let best = null;
+  for(const row of PHANLOAIMAU){
+    if(!row.maMauNorm) continue;
+    if(t.includes(row.maMauNorm)){
+      if(!best || row.maMauNorm.length > best.maMauNorm.length) best = row;
+    }
+  }
+  return best ? best.phanLoai : null;
+}
+
+// Xác định "loại ván" theo đúng các nhóm dùng trong BangGia
+// (MDF / MDF PURPLECORE / MFMDF / MFMDF PURPLECORE / MFC / HPL...)
+// coatedHint: true nếu tên vật tư có nhóm màu khớp catalogue HOẶC có từ khoá
+// bề mặt (Matt/Pearl/Woodgrain/…) — coi là "đã phủ" trong cả 2 trường hợp để
+// tránh báo nhầm giá ván thô cho ván đã phủ màu không có trong catalogue.
+function detectLoaiVan(tenVatTu, nhomMauFound){
+  const t = norm(tenVatTu);
+  const purple = isPurplecore(tenVatTu);
+  if(/\bhpl\b/.test(t)) return 'HPL';
+  if(/\bmfc\b/.test(t)) return 'MFC';
+  if(/\bmdf\b/.test(t)){
+    const coated = !!nhomMauFound || hasFinishHint(tenVatTu);
+    if(purple) return coated ? 'MFMDF PURPLECORE' : 'MDF PURPLECORE';
+    return coated ? 'MFMDF' : 'MDF';
+  }
+  return null;
+}
+
+function buildCapKeo(moisture, glue, purple){
+  if(!glue) return null;
+  if(glue === 'Super E0' && purple) return 'HMR Super E0 PURPLECORE';
+  if(moisture === 'HMR V313') return 'HMR V313 ' + glue;
+  if(moisture === 'HMR') return 'HMR ' + glue;
+  return glue;
+}
+
+/* =========================================================================
+   3. PRICE LOOKUP (đoán giá bán theo BangGia — chỉ mang tính gợi ý)
+   ========================================================================= */
+function lookupPrice(tenVatTu){
+  const nhomMau = findNhomMau(tenVatTu);
+  const loaiVan = detectLoaiVan(tenVatTu, nhomMau);
+  const moisture = parseMoisture(tenVatTu);
+  const glue = parseGlue(tenVatTu);
+  const purple = isPurplecore(tenVatTu);
+  const capKeo = buildCapKeo(moisture, glue, purple);
+  const doDay = parseThicknessMm(tenVatTu);
+  const kho = parseSheetSize(tenVatTu);
+
+  if(!loaiVan || !capKeo || !doDay || !kho || !BANGGIA.length){
+    return { price:null, reason:'Không đủ thông tin để tự đoán giá — vui lòng nhập tay.' };
+  }
+
+  const loaiVanN = norm(loaiVan), capKeoN = norm(capKeo), khoN = norm(kho);
+  const candidates = BANGGIA.filter(r =>
+    norm(r.loaiVan) === loaiVanN &&
+    norm(r.capKeo) === capKeoN &&
+    Math.abs(r.doDay - doDay) < 0.01 &&
+    norm(r.kho) === khoN
+  );
+
+  const isRaw = /^(MDF|MDF PURPLECORE)$/.test(loaiVan);
+
+  if(isRaw){
+    const hit = candidates.find(r => !r.nhomMau);
+    if(hit) return { price: hit.gia, reason: `Khớp: ${loaiVan} · ${capKeo} · ${doDay}mm · ${kho}` };
+    return { price:null, reason:'Không tìm thấy dòng giá khớp trong Bảng giá — vui lòng nhập tay.' };
+  }
+
+  if(!nhomMau){
+    return { price:null, reason:'Ván đã phủ bề mặt/màu nhưng không xác định được nhóm màu (mã màu chưa có trong PhanLoaiMau) — vui lòng nhập tay để tránh sai giá.' };
+  }
+  const nmUp = nhomMau.toUpperCase();
+  let hit = null;
+  if(['WOODGRAIN','PATTERN','METALLIC'].includes(nmUp)){
+    hit = candidates.find(r => {
+      const rn = (r.nhomMau||'').toUpperCase();
+      return rn.includes('WOODGRAIN') || rn.includes('PATTERN') || rn.includes('METALLIC');
+    });
+  } else {
+    hit = candidates.find(r => (r.nhomMau||'').toUpperCase() === nmUp) ||
+          candidates.find(r => (r.nhomMau||'').toUpperCase().includes(nmUp));
+  }
+  if(hit) return { price: hit.gia, reason: `Khớp: ${loaiVan} · ${capKeo} · ${nhomMau} · ${doDay}mm · ${kho}` };
+  return { price:null, reason:'Không tìm thấy dòng giá khớp trong Bảng giá — vui lòng nhập tay.' };
+}
+
+/* =========================================================================
+   4. PARSING MATRIX -> DATA (CSV / XLSX / Google Sheet CSV)
+   ========================================================================= */
+function findHeaderRow(matrix, requiredNormNames){
+  for(let r=0;r<matrix.length;r++){
+    const row = matrix[r] || [];
+    const found = {};
+    row.forEach((cell,ci)=>{ found[norm(cell)] = ci; });
+    if(requiredNormNames.every(n => found[n] !== undefined)){
+      return { headerIdx:r, cols:found };
+    }
+  }
+  return null;
+}
+
+function parseTonKhoMatrix(matrix){
+  const hdr = findHeaderRow(matrix, ['ten vat tu','ton cuoi']);
+  if(!hdr) return { ok:false, error:'Không tìm thấy cột "Tên vật tư" / "Tồn cuối".' };
+  const { headerIdx, cols } = hdr;
+  const out = [];
+  for(let r=headerIdx+1;r<matrix.length;r++){
+    const row = matrix[r] || [];
+    const tenVatTu = row[cols['ten vat tu']];
+    if(tenVatTu === undefined || tenVatTu === null || String(tenVatTu).trim()==='') continue;
+    if(norm(tenVatTu) === 'tong cong') continue;
+    const maVatTu = cols['ma vat tu'] !== undefined ? row[cols['ma vat tu']] : '';
+    const dvt = cols['dvt'] !== undefined ? row[cols['dvt']] : '';
+    let tonCuoi = cols['ton cuoi'] !== undefined ? row[cols['ton cuoi']] : 0;
+    tonCuoi = typeof tonCuoi === 'number' ? tonCuoi : parseFloat(String(tonCuoi).replace(/,/g,'')) || 0;
+    out.push({ maVatTu:String(maVatTu||'').trim(), tenVatTu:String(tenVatTu).trim(), dvt:String(dvt||'').trim(), tonCuoi });
+  }
+  return { ok:true, rows: out };
+}
+
+function parseBangGiaMatrix(matrix){
+  const hdr = findHeaderRow(matrix, ['loai van','cap keo','do day mm','kho','don gia vnd']);
+  if(!hdr) return { ok:false, error:'Không tìm thấy đủ cột Loai_Van / Cap_Keo / Do_Day_mm / Kho / Don_Gia_VND.' };
+  const { headerIdx, cols } = hdr;
+  const out = [];
+  for(let r=headerIdx+1;r<matrix.length;r++){
+    const row = matrix[r] || [];
+    const loaiVan = row[cols['loai van']];
+    if(loaiVan === undefined || loaiVan === null || String(loaiVan).trim()==='') continue;
+    const doDayRaw = row[cols['do day mm']];
+    const doDay = typeof doDayRaw === 'number' ? doDayRaw : parseFloat(String(doDayRaw).replace(',','.')) || 0;
+    const giaRaw = row[cols['don gia vnd']];
+    const gia = typeof giaRaw === 'number' ? giaRaw : parseFloat(String(giaRaw).replace(/[^\d.]/g,'')) || 0;
+    out.push({
+      loaiVan: String(loaiVan).trim(),
+      capKeo: String(row[cols['cap keo']]||'').trim(),
+      nhomMau: cols['nhom mau'] !== undefined ? String(row[cols['nhom mau']]||'').trim() : '',
+      doDay, kho: String(row[cols['kho']]||'').trim(),
+      gia, ghiChu: cols['ghi chu'] !== undefined ? String(row[cols['ghi chu']]||'').trim() : ''
+    });
+  }
+  return { ok:true, rows: out };
+}
+
+function parsePhanLoaiMauMatrix(matrix){
+  const hdr = findHeaderRow(matrix, ['ma mau','phan loai']);
+  if(!hdr) return { ok:false, error:'Không tìm thấy đủ cột Ma_Mau / Phan_Loai.' };
+  const { headerIdx, cols } = hdr;
+  const out = [];
+  for(let r=headerIdx+1;r<matrix.length;r++){
+    const row = matrix[r] || [];
+    const maMau = row[cols['ma mau']];
+    if(maMau === undefined || maMau === null || String(maMau).trim()==='') continue;
+    const phanLoai = String(row[cols['phan loai']]||'').trim();
+    out.push({ maMau: String(maMau).trim(), maMauNorm: norm(maMau), phanLoai });
+  }
+  out.sort((a,b)=> b.maMauNorm.length - a.maMauNorm.length);
+  return { ok:true, rows: out };
+}
+
+function csvToMatrix(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], n = text[i+1];
+    if(inQuotes){
+      if(c === '"' && n === '"'){ field+='"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else field += c;
+    } else {
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\r'){ /* skip */ }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+/* =========================================================================
+   5. DATA LOADING
+   ========================================================================= */
+function setStatus(kind, text){
+  const pill = document.getElementById('statusPill');
+  const t = document.getElementById('statusText');
+  pill.className = 'status-pill' + (kind ? ' '+kind : '');
+  t.textContent = text;
+}
+
+function extractSheetId(url){
+  const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : (/^[a-zA-Z0-9-_]{20,}$/.test(url.trim()) ? url.trim() : null);
+}
+
+async function fetchSheetTabCsv(id, tabName){
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(csvUrl);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const text = await res.text();
+  if(text.trim().startsWith('<')) throw new Error(`tab "${tabName}" chưa chia sẻ công khai hoặc sai tên tab`);
+  return csvToMatrix(text);
+}
+
+async function loadFromGoogleSheet(){
+  const urlInput = document.getElementById('sheetUrl').value.trim();
+  const tabTonKho = document.getElementById('tabTonKho').value.trim() || 'TonKho';
+  const tabBangGia = document.getElementById('tabBangGia').value.trim() || 'BangGia';
+  const tabPhanLoaiMau = document.getElementById('tabPhanLoaiMau').value.trim() || 'PhanLoaiMau';
+  if(!urlInput){ setStatus('bad','Vui lòng dán link Google Sheet'); return; }
+  const id = extractSheetId(urlInput);
+  if(!id){ setStatus('bad','Không đọc được ID từ link, kiểm tra lại'); return; }
+
+  setStatus('', 'Đang tải…');
+  const errors = [];
+  let tonkhoResult = { ok:false, rows:[] };
+  let banggiaResult = { ok:false, rows:[] };
+  let phanloaiResult = { ok:false, rows:[] };
+
+  try{
+    const m = await fetchSheetTabCsv(id, tabTonKho);
+    tonkhoResult = parseTonKhoMatrix(m);
+    if(!tonkhoResult.ok) errors.push('Tồn kho: '+tonkhoResult.error);
+  }catch(e){ errors.push('Tồn kho: '+e.message); }
+
+  try{
+    const m = await fetchSheetTabCsv(id, tabBangGia);
+    banggiaResult = parseBangGiaMatrix(m);
+    if(!banggiaResult.ok) errors.push('Bảng giá: '+banggiaResult.error);
+  }catch(e){ errors.push('Bảng giá: '+e.message); }
+
+  try{
+    const m = await fetchSheetTabCsv(id, tabPhanLoaiMau);
+    phanloaiResult = parsePhanLoaiMauMatrix(m);
+    if(!phanloaiResult.ok) errors.push('Phân loại màu: '+phanloaiResult.error);
+  }catch(e){ errors.push('Phân loại màu: '+e.message); }
+
+  applyParsed(tonkhoResult.ok?tonkhoResult.rows:[], banggiaResult.ok?banggiaResult.rows:[], phanloaiResult.ok?phanloaiResult.rows:[], 'Google Sheet', errors);
+
+  try{
+    localStorage.setItem('pnp_order_sheet_url', urlInput);
+    localStorage.setItem('pnp_order_tab_tonkho', tabTonKho);
+    localStorage.setItem('pnp_order_tab_banggia', tabBangGia);
+    localStorage.setItem('pnp_order_tab_phanloaimau', tabPhanLoaiMau);
+  }catch(e){}
+}
+
+function findSheetByNames(wb, candidateNames){
+  for(const name of candidateNames){
+    const hit = wb.SheetNames.find(sn => norm(sn) === norm(name));
+    if(hit) return hit;
+  }
+  return null;
+}
+
+function loadFromFile(file){
+  setStatus('', 'Đang đọc file…');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const errors = [];
+
+      const tkName = findSheetByNames(wb, ['TonKho','Main']);
+      const bgName = findSheetByNames(wb, ['BangGia']);
+      const plmName = findSheetByNames(wb, ['PhanLoaiMau']);
+
+      let tonkhoResult = { ok:false, rows:[] };
+      let banggiaResult = { ok:false, rows:[] };
+      let phanloaiResult = { ok:false, rows:[] };
+
+      if(tkName){
+        const m = XLSX.utils.sheet_to_json(wb.Sheets[tkName], {header:1, raw:true});
+        tonkhoResult = parseTonKhoMatrix(m);
+        if(!tonkhoResult.ok) errors.push('Tồn kho ('+tkName+'): '+tonkhoResult.error);
+      } else errors.push('Không tìm thấy sheet "TonKho" / "Main" trong file.');
+
+      if(bgName){
+        const m = XLSX.utils.sheet_to_json(wb.Sheets[bgName], {header:1, raw:true});
+        banggiaResult = parseBangGiaMatrix(m);
+        if(!banggiaResult.ok) errors.push('Bảng giá ('+bgName+'): '+banggiaResult.error);
+      } else errors.push('Không tìm thấy sheet "BangGia" trong file.');
+
+      if(plmName){
+        const m = XLSX.utils.sheet_to_json(wb.Sheets[plmName], {header:1, raw:true});
+        phanloaiResult = parsePhanLoaiMauMatrix(m);
+        if(!phanloaiResult.ok) errors.push('Phân loại màu ('+plmName+'): '+phanloaiResult.error);
+      } else errors.push('Không tìm thấy sheet "PhanLoaiMau" trong file.');
+
+      applyParsed(tonkhoResult.ok?tonkhoResult.rows:[], banggiaResult.ok?banggiaResult.rows:[], phanloaiResult.ok?phanloaiResult.rows:[], file.name, errors);
+    }catch(err){
+      setStatus('bad','Lỗi đọc file: '+err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function applyParsed(tonkhoRows, banggiaRows, phanloaiRows, sourceLabel, errors){
+  TONKHO = tonkhoRows;
+  BANGGIA = banggiaRows;
+  PHANLOAIMAU = phanloaiRows;
+  TONKHO_BY_SKU = new Map();
+  TONKHO.forEach(r=>{ if(r.maVatTu) TONKHO_BY_SKU.set(norm(r.maVatTu), r); });
+
+  if(!TONKHO.length && !BANGGIA.length){
+    setStatus('bad', (errors&&errors.length) ? errors.join(' · ') : 'Không đọc được dữ liệu.');
+    return;
+  }
+  const parts = [];
+  parts.push(`${TONKHO.length.toLocaleString('vi-VN')} SKU tồn kho`);
+  parts.push(`${BANGGIA.length.toLocaleString('vi-VN')} dòng bảng giá`);
+  parts.push(`${PHANLOAIMAU.length.toLocaleString('vi-VN')} mã màu`);
+  const kind = (errors && errors.length) ? 'warn' : 'ok';
+  let text = `Đã tải: ${parts.join(' · ')} — từ ${sourceLabel}`;
+  if(errors && errors.length) text += ` (⚠ ${errors.join(' | ')})`;
+  setStatus(kind==='warn'?'':'ok', text);
+
+  // re-run price/name lookups on existing lines with the new data
+  recalcAllLines();
+}
+
+/* =========================================================================
+   6. UI WIRING — data source tabs / file / drag-drop
+   ========================================================================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('loadSheetBtn').addEventListener('click', loadFromGoogleSheet);
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', (e)=>{
+  if(e.target.files[0]){
+    document.getElementById('fileName').textContent = e.target.files[0].name;
+    loadFromFile(e.target.files[0]);
+  }
+});
+['dragenter','dragover'].forEach(ev=> dropZone.addEventListener(ev, e=>{ e.preventDefault(); dropZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev=> dropZone.addEventListener(ev, e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); }));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if(f){ document.getElementById('fileName').textContent = f.name; loadFromFile(f); }
+});
+const fileInputFallbackBtn = document.getElementById('fileInputFallbackBtn');
+if(fileInputFallbackBtn){
+  fileInputFallbackBtn.addEventListener('click', (e)=>{ e.preventDefault(); fileInput.click(); });
+}
+
+try{
+  const savedUrl = localStorage.getItem('pnp_order_sheet_url');
+  const savedTk = localStorage.getItem('pnp_order_tab_tonkho');
+  const savedBg = localStorage.getItem('pnp_order_tab_banggia');
+  const savedPlm = localStorage.getItem('pnp_order_tab_phanloaimau');
+  if(savedUrl) document.getElementById('sheetUrl').value = savedUrl;
+  if(savedTk) document.getElementById('tabTonKho').value = savedTk;
+  if(savedBg) document.getElementById('tabBangGia').value = savedBg;
+  if(savedPlm) document.getElementById('tabPhanLoaiMau').value = savedPlm;
+}catch(e){}
+
+/* =========================================================================
+   7. ORDER LINES
+   ========================================================================= */
+let lineSeq = 0;
+let lines = []; // {id, sku, name, unit, qty, price, priceAuto, priceReason, taxPercent, taxCustom}
+
+function newLine(){
+  lineSeq++;
+  return { id:'ln'+lineSeq, sku:'', name:'', unit:'', qty:1, price:0, priceAuto:false, priceReason:'', taxPercent:'8', taxCustom:'' };
+}
+
+function addLine(){
+  lines.push(newLine());
+  renderLines();
+}
+
+function removeLine(id){
+  lines = lines.filter(l=>l.id!==id);
+  if(!lines.length) lines.push(newLine());
+  renderLines();
+}
+
+function effectiveTaxPercent(line){
+  if(line.taxPercent === 'custom') return parseFloat(line.taxCustom)||0;
+  return parseFloat(line.taxPercent)||0;
+}
+
+function lineSubtotal(line){ return (parseFloat(line.qty)||0) * (parseFloat(line.price)||0); }
+function lineTax(line){ return lineSubtotal(line) * (effectiveTaxPercent(line)/100); }
+function lineTotal(line){ return lineSubtotal(line) + lineTax(line); }
+
+function applySkuToLine(line, skuRaw){
+  line.sku = skuRaw;
+  const hit = TONKHO_BY_SKU.get(norm(skuRaw));
+  if(hit){
+    line.name = hit.tenVatTu;
+    line.unit = hit.dvt;
+    const lp = lookupPrice(hit.tenVatTu);
+    if(lp.price !== null){
+      line.price = lp.price;
+      line.priceAuto = true;
+      line.priceReason = lp.reason;
+    } else {
+      line.priceAuto = false;
+      line.priceReason = lp.reason;
+    }
+  } else {
+    line.name = '';
+    line.unit = '';
+    line.priceAuto = false;
+    line.priceReason = skuRaw ? 'Không tìm thấy mã vật tư này trong dữ liệu tồn kho.' : '';
+  }
+}
+
+function recalcAllLines(){
+  lines.forEach(line => { if(line.sku) applySkuToLine(line, line.sku); });
+  renderLines();
+}
+
+function skuSuggestions(query){
+  const q = norm(query);
+  if(q.length < 1) return [];
+  const out = [];
+  for(const r of TONKHO){
+    if(norm(r.maVatTu).includes(q) || norm(r.tenVatTu).includes(q)){
+      out.push(r);
+      if(out.length >= 8) break;
+    }
+  }
+  return out;
+}
+
+function renderLines(){
+  const wrap = document.getElementById('linesWrap');
+  wrap.innerHTML = '';
+  document.getElementById('lineCount').textContent = lines.length + ' dòng';
+
+  lines.forEach((line, idx) => {
+    const card = document.createElement('div');
+    card.className = 'line-card';
+    card.dataset.id = line.id;
+
+    const taxIsCustom = line.taxPercent === 'custom';
+    const priceHintHtml = line.priceReason
+      ? `<div class="price-hint ${line.priceAuto?'auto':'manual'}">${line.priceAuto?'✓ Giá tự động: ':'⚠ '}${line.priceReason}</div>`
+      : '';
+
+    card.innerHTML = `
+      <div class="line-num">
+        <span>SẢN PHẨM #${idx+1}</span>
+        <button type="button" class="btn ghost danger remove-line-btn" data-action="remove">🗑 Xoá dòng</button>
+      </div>
+      <div class="line-grid">
+        <div class="field tiny">
+          <label>Mã vật tư</label>
+          <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="Nhập / dán mã…" autocomplete="off" />
+          <div class="sku-suggest" data-role="suggest"></div>
+        </div>
+        <div class="field wide">
+          <label>Tên vật tư</label>
+          <input type="text" data-field="name" value="${escapeAttr(line.name)}" placeholder="Tự động theo mã vật tư, hoặc gõ tay" />
+        </div>
+        <div class="field tiny">
+          <label>ĐVT</label>
+          <input type="text" data-field="unit" value="${escapeAttr(line.unit)}" readonly />
+        </div>
+        <div class="field tiny">
+          <label>Số lượng</label>
+          <input type="number" min="0" step="1" data-field="qty" value="${line.qty}" />
+        </div>
+        <div class="field small">
+          <label>Đơn giá (VNĐ)</label>
+          <input type="number" min="0" step="1000" data-field="price" value="${Math.round(line.price)}" />
+          ${priceHintHtml}
+        </div>
+        <div class="field tiny">
+          <label>Thuế</label>
+          <select class="tax-select" data-field="taxPercent">
+            <option value="0" ${line.taxPercent==='0'?'selected':''}>0%</option>
+            <option value="1" ${line.taxPercent==='1'?'selected':''}>1%</option>
+            <option value="2" ${line.taxPercent==='2'?'selected':''}>2%</option>
+            <option value="3" ${line.taxPercent==='3'?'selected':''}>3%</option>
+            <option value="5" ${line.taxPercent==='5'?'selected':''}>5%</option>
+            <option value="8" ${line.taxPercent==='8'?'selected':''}>8%</option>
+            <option value="custom" ${taxIsCustom?'selected':''}>Khác…</option>
+          </select>
+          <input type="number" class="tax-custom" data-field="taxCustom" placeholder="%" value="${escapeAttr(line.taxCustom)}" style="display:${taxIsCustom?'block':'none'}" />
+        </div>
+        <div class="line-total-box">
+          <span class="lbl">Thành tiền (gồm thuế)</span>
+          <span class="val">${fmtVND(lineTotal(line))}</span>
+        </div>
+      </div>`;
+    wrap.appendChild(card);
+  });
+
+  renderTotals();
+}
+
+function escapeAttr(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function renderTotals(){
+  const subtotal = lines.reduce((s,l)=> s + lineSubtotal(l), 0);
+  const tax = lines.reduce((s,l)=> s + lineTax(l), 0);
+  const shipFee = parseFloat(document.getElementById('ordShipFee').value) || 0;
+  const grand = subtotal + tax + shipFee;
+  document.getElementById('totSubtotal').textContent = fmtVND(subtotal);
+  document.getElementById('totTax').textContent = fmtVND(tax);
+  document.getElementById('totShip').textContent = fmtVND(shipFee);
+  document.getElementById('totGrand').textContent = fmtVND(grand);
+}
+
+/* ---- event delegation for dynamic line-card inputs ---- */
+const linesWrap = document.getElementById('linesWrap');
+
+linesWrap.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-action="remove"]');
+  if(btn){
+    const card = e.target.closest('.line-card');
+    removeLine(card.dataset.id);
+    return;
+  }
+  const opt = e.target.closest('.sku-suggest .opt');
+  if(opt){
+    const card = e.target.closest('.line-card');
+    const line = lines.find(l=>l.id===card.dataset.id);
+    applySkuToLine(line, opt.dataset.sku);
+    renderLines();
+  }
+});
+
+linesWrap.addEventListener('input', (e)=>{
+  const card = e.target.closest('.line-card');
+  if(!card) return;
+  const line = lines.find(l=>l.id===card.dataset.id);
+  if(!line) return;
+  const field = e.target.dataset.field;
+  if(!field) return;
+
+  if(field === 'sku'){
+    line.sku = e.target.value;
+    const sug = card.querySelector('[data-role="suggest"]');
+    const results = skuSuggestions(e.target.value);
+    if(results.length){
+      sug.innerHTML = results.map(r=>`
+        <div class="opt" data-sku="${escapeAttr(r.maVatTu)}">
+          <span class="stk">${r.tonCuoi.toLocaleString('vi-VN')} ${escapeAttr(r.dvt)}</span>
+          <span class="sku">${escapeAttr(r.maVatTu)}</span><br/>
+          <span class="nm">${escapeAttr(r.tenVatTu)}</span>
+        </div>`).join('');
+      sug.classList.add('open');
+    } else {
+      sug.innerHTML = e.target.value.trim() ? `<div class="empty">Không tìm thấy mã khớp.</div>` : '';
+      sug.classList.toggle('open', !!e.target.value.trim());
+    }
+    return; // don't re-render whole list on every keystroke — wait for blur/select
+  }
+
+  if(field === 'name'){ line.name = e.target.value; return; }
+  if(field === 'unit'){ line.unit = e.target.value; return; }
+  if(field === 'qty'){ line.qty = parseFloat(e.target.value)||0; updateLineTotalDisplay(card, line); return; }
+  if(field === 'price'){ line.price = parseFloat(e.target.value)||0; line.priceAuto=false; updateLineTotalDisplay(card, line); return; }
+  if(field === 'taxCustom'){ line.taxCustom = e.target.value; updateLineTotalDisplay(card, line); return; }
+});
+
+linesWrap.addEventListener('change', (e)=>{
+  const card = e.target.closest('.line-card');
+  if(!card) return;
+  const line = lines.find(l=>l.id===card.dataset.id);
+  if(!line) return;
+  const field = e.target.dataset.field;
+
+  if(field === 'sku'){
+    // commit typed SKU (in case user typed an exact code and didn't click a suggestion)
+    applySkuToLine(line, e.target.value);
+    renderLines();
+    return;
+  }
+  if(field === 'taxPercent'){
+    line.taxPercent = e.target.value;
+    renderLines();
+    return;
+  }
+});
+
+function updateLineTotalDisplay(card, line){
+  const valEl = card.querySelector('.line-total-box .val');
+  if(valEl) valEl.textContent = fmtVND(lineTotal(line));
+  const taxCustomInput = card.querySelector('[data-field="taxCustom"]');
+  if(taxCustomInput) taxCustomInput.style.display = (line.taxPercent==='custom') ? 'block' : 'none';
+  renderTotals();
+}
+
+// close suggestion dropdowns when clicking elsewhere
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.sku-input') || e.target.closest('.sku-suggest')) return;
+  document.querySelectorAll('.sku-suggest.open').forEach(el=> el.classList.remove('open'));
+});
+
+document.getElementById('addLineBtn').addEventListener('click', addLine);
+
+document.getElementById('clearOrderBtn').addEventListener('click', ()=>{
+  if(!confirm('Xoá toàn bộ danh sách sản phẩm trong đơn hàng này?')) return;
+  lines = [newLine()];
+  renderLines();
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+
+document.getElementById('ordShipFee').addEventListener('input', renderTotals);
+
+/* =========================================================================
+   8. INIT
+   ========================================================================= */
+(function initHeader(){
+  const today = new Date();
+  document.getElementById('ordDate').value = today.toISOString().slice(0,10);
+  const code = 'DH' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0') + '-' + Math.floor(100+Math.random()*900);
+  document.getElementById('ordCode').value = code;
+})();
+
+lines = [newLine()];
+renderLines();
+</script>
+</body>
+</html>
