@@ -184,19 +184,56 @@
   .order-info{padding:20px 22px;margin-bottom:18px;}
   .order-info .field-row + .field-row{margin-top:10px;}
 
-  /* ---------- Line item cards ---------- */
-  .line-card{
-    background:var(--panel);border:1px solid var(--line);border-radius:9px;
-    padding:14px 14px 12px;margin-bottom:10px;
+  /* ---------- Line item table (mỗi sản phẩm 1 hàng ngang) ---------- */
+  .lines-card{padding:6px 6px 10px;margin-bottom:10px;overflow:hidden;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table.lines-table{width:100%;border-collapse:collapse;min-width:1180px;}
+  table.lines-table th{
+    text-align:left;font-size:11px;font-weight:800;color:#a8a190;
+    letter-spacing:.04em;text-transform:uppercase;
+    padding:12px 8px 8px;white-space:nowrap;border-bottom:1px solid var(--line);
   }
-  .line-card .line-num{
-    font-size:11px;font-weight:800;color:#a8a190;letter-spacing:.05em;
-    margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;
+  table.lines-table td{
+    padding:6px 8px;vertical-align:middle;border-bottom:1px solid #f0ede4;
+    position:relative;
   }
-  .line-grid{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
+  table.lines-table tr:last-child td{border-bottom:none;}
+  table.lines-table input, table.lines-table select{
+    padding:7px 8px;font-size:13px;min-width:0;
+  }
+  .col-stt{width:30px;color:#a8a190;font-weight:700;font-size:12.5px;text-align:center;}
+  .col-sku input{width:118px;font-family:var(--mono);}
+  .col-name input{width:260px;}
+  .col-unit input{width:56px;text-align:center;}
+  .col-qty input{width:64px;text-align:right;}
+  .col-price{width:150px;}
+  .col-price .price-row{display:flex;align-items:center;gap:5px;}
+  .col-price input{width:118px;text-align:right;}
+  .col-discount input{width:70px;text-align:right;}
+  .col-tax select{width:86px;}
+  .col-tax input.tax-custom{width:70px;margin-top:4px;}
+  .col-total{width:130px;text-align:right;font-weight:800;color:var(--blue-deep);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .col-remove{width:34px;text-align:center;}
+
+  .price-flag{
+    flex:none;width:18px;height:18px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;cursor:pointer;border:none;
+    font-family:inherit;line-height:1;
+  }
+  .price-flag.auto{background:var(--ok-bg);color:var(--ok);}
+  .price-flag.manual{background:var(--warn-bg);color:var(--warn);}
+
+  .float-tip{
+    display:none;position:fixed;z-index:60;max-width:260px;
+    background:var(--ink);color:#fff;font-size:12px;line-height:1.5;
+    padding:8px 10px;border-radius:7px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);
+  }
+  .float-tip.open{display:block;}
+
   .sku-input{font-family:var(--mono);}
   .sku-suggest{
-    display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:30;
+    display:none;position:fixed;z-index:60;
     max-height:230px;overflow-y:auto;background:var(--panel);
     border:1px solid var(--line);border-radius:8px;
     box-shadow:0 10px 28px -10px rgba(28,26,23,.3);
@@ -212,22 +249,14 @@
   .sku-suggest .opt .stk{float:right;font-size:11px;color:#847e72;}
   .sku-suggest .empty{padding:10px;font-size:12px;color:#847e72;}
 
-  .price-hint{font-size:11px;margin-top:4px;line-height:1.4;}
-  .price-hint.auto{color:var(--ok);}
-  .price-hint.manual{color:var(--warn);}
-
-  .tax-select{width:100%;}
-  .tax-custom{margin-top:6px;}
-
-  .line-total-box{
-    flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;
-    margin-top:6px;padding-top:10px;border-top:1px dashed var(--line);
+  .remove-line-btn{
+    background:none;border:none;cursor:pointer;color:#c08a8a;
+    font-size:16px;padding:4px;line-height:1;
   }
-  .line-total-box .lbl{font-size:12px;color:#847e72;font-weight:600;}
-  .line-total-box .val{font-size:16px;font-weight:800;color:var(--blue-deep);font-variant-numeric:tabular-nums;}
-  .remove-line-btn{font-size:12px;padding:6px 10px;min-height:30px;}
+  .remove-line-btn:hover{color:var(--bad);}
 
   .add-line-row{display:flex;justify-content:center;margin:14px 0 30px;}
+  .table-hint{font-size:11.5px;color:#a8a190;padding:8px 10px 2px;}
 
   /* ---------- Totals ---------- */
   .totals-card{padding:20px 22px;margin-bottom:24px;}
@@ -260,7 +289,6 @@
     .btn{width:100%;}
     .tabs{gap:2px;}
     .tab-btn{padding:10px 10px;font-size:13px;min-height:40px;}
-    .line-grid{gap:8px;}
     .action-row{justify-content:stretch;}
     .action-row .btn{flex:1 1 auto;}
   }
@@ -272,10 +300,11 @@
   /* ---------- Print ---------- */
   @media print{
     header.top, .source-card, .add-line-row, .action-row, .remove-line-btn,
-    .nav-link, .sku-suggest, footer, .hint{display:none !important;}
+    .nav-link, .sku-suggest, .float-tip, footer, .hint, .price-flag{display:none !important;}
     body{padding:0;background:#fff;}
     .wrap{margin:0;padding:0;max-width:100%;}
-    .line-card{break-inside:avoid;border:1px solid #ccc;}
+    .table-scroll{overflow:visible;}
+    table.lines-table{min-width:0;}
     input, select{border:none !important;background:none !important;padding:2px 0 !important;}
   }
 </style>
@@ -396,6 +425,9 @@
     <span class="sub" id="lineCount">0 dòng</span>
   </div>
   <div id="linesWrap"></div>
+  <p class="table-hint">💡 Kéo ngang để xem hết các cột trên màn hình nhỏ. Chạm biểu tượng cạnh Đơn giá để xem lý do tự đoán giá.</p>
+  <div class="sku-suggest" id="skuSuggestPanel"></div>
+  <div class="float-tip" id="floatTip"></div>
   <div class="add-line-row">
     <button class="btn" id="addLineBtn">+ Thêm dòng sản phẩm</button>
   </div>
@@ -403,8 +435,12 @@
   <!-- ============ TOTALS ============ -->
   <section class="card totals-card">
     <div class="totals-row">
-      <span class="lbl">Tổng tiền hàng (trước thuế)</span>
+      <span class="lbl">Tổng tiền hàng (trước chiết khấu, trước thuế)</span>
       <span class="val" id="totSubtotal">0 ₫</span>
+    </div>
+    <div class="totals-row">
+      <span class="lbl">Tổng chiết khấu</span>
+      <span class="val" id="totDiscount">0 ₫</span>
     </div>
     <div class="totals-row">
       <span class="lbl">Tổng tiền thuế</span>
@@ -898,11 +934,11 @@ try{
    7. ORDER LINES
    ========================================================================= */
 let lineSeq = 0;
-let lines = []; // {id, sku, name, unit, qty, price, priceAuto, priceReason, taxPercent, taxCustom}
+let lines = []; // {id, sku, name, unit, qty, price, priceAuto, priceReason, discountPercent, taxPercent, taxCustom}
 
 function newLine(){
   lineSeq++;
-  return { id:'ln'+lineSeq, sku:'', name:'', unit:'', qty:1, price:0, priceAuto:false, priceReason:'', taxPercent:'8', taxCustom:'' };
+  return { id:'ln'+lineSeq, sku:'', name:'', unit:'', qty:1, price:0, priceAuto:false, priceReason:'', discountPercent:0, taxPercent:'8', taxCustom:'' };
 }
 
 function addLine(){
@@ -921,7 +957,9 @@ function effectiveTaxPercent(line){
   return parseFloat(line.taxPercent)||0;
 }
 
-function lineSubtotal(line){ return (parseFloat(line.qty)||0) * (parseFloat(line.price)||0); }
+function lineGross(line){ return (parseFloat(line.qty)||0) * (parseFloat(line.price)||0); }
+function lineDiscountAmount(line){ return lineGross(line) * ((parseFloat(line.discountPercent)||0)/100); }
+function lineSubtotal(line){ return lineGross(line) - lineDiscountAmount(line); } // sau chiết khấu, trước thuế
 function lineTax(line){ return lineSubtotal(line) * (effectiveTaxPercent(line)/100); }
 function lineTotal(line){ return lineSubtotal(line) + lineTax(line); }
 
@@ -966,151 +1004,192 @@ function skuSuggestions(query){
   return out;
 }
 
-function renderLines(){
-  const wrap = document.getElementById('linesWrap');
-  wrap.innerHTML = '';
-  document.getElementById('lineCount').textContent = lines.length + ' dòng';
-
-  lines.forEach((line, idx) => {
-    const card = document.createElement('div');
-    card.className = 'line-card';
-    card.dataset.id = line.id;
-
-    const taxIsCustom = line.taxPercent === 'custom';
-    const priceHintHtml = line.priceReason
-      ? `<div class="price-hint ${line.priceAuto?'auto':'manual'}">${line.priceAuto?'✓ Giá tự động: ':'⚠ '}${line.priceReason}</div>`
-      : '';
-
-    card.innerHTML = `
-      <div class="line-num">
-        <span>SẢN PHẨM #${idx+1}</span>
-        <button type="button" class="btn ghost danger remove-line-btn" data-action="remove">🗑 Xoá dòng</button>
-      </div>
-      <div class="line-grid">
-        <div class="field tiny">
-          <label>Mã vật tư</label>
-          <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="Nhập / dán mã…" autocomplete="off" />
-          <div class="sku-suggest" data-role="suggest"></div>
-        </div>
-        <div class="field wide">
-          <label>Tên vật tư</label>
-          <input type="text" data-field="name" value="${escapeAttr(line.name)}" placeholder="Tự động theo mã vật tư, hoặc gõ tay" />
-        </div>
-        <div class="field tiny">
-          <label>ĐVT</label>
-          <input type="text" data-field="unit" value="${escapeAttr(line.unit)}" readonly />
-        </div>
-        <div class="field tiny">
-          <label>Số lượng</label>
-          <input type="number" min="0" step="1" data-field="qty" value="${line.qty}" />
-        </div>
-        <div class="field small">
-          <label>Đơn giá (VNĐ)</label>
-          <input type="number" min="0" step="1000" data-field="price" value="${Math.round(line.price)}" />
-          ${priceHintHtml}
-        </div>
-        <div class="field tiny">
-          <label>Thuế</label>
-          <select class="tax-select" data-field="taxPercent">
-            <option value="0" ${line.taxPercent==='0'?'selected':''}>0%</option>
-            <option value="1" ${line.taxPercent==='1'?'selected':''}>1%</option>
-            <option value="2" ${line.taxPercent==='2'?'selected':''}>2%</option>
-            <option value="3" ${line.taxPercent==='3'?'selected':''}>3%</option>
-            <option value="5" ${line.taxPercent==='5'?'selected':''}>5%</option>
-            <option value="8" ${line.taxPercent==='8'?'selected':''}>8%</option>
-            <option value="custom" ${taxIsCustom?'selected':''}>Khác…</option>
-          </select>
-          <input type="number" class="tax-custom" data-field="taxCustom" placeholder="%" value="${escapeAttr(line.taxCustom)}" style="display:${taxIsCustom?'block':'none'}" />
-        </div>
-        <div class="line-total-box">
-          <span class="lbl">Thành tiền (gồm thuế)</span>
-          <span class="val">${fmtVND(lineTotal(line))}</span>
-        </div>
-      </div>`;
-    wrap.appendChild(card);
-  });
-
-  renderTotals();
-}
-
 function escapeAttr(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 
+function renderLines(){
+  const wrap = document.getElementById('linesWrap');
+  document.getElementById('lineCount').textContent = lines.length + ' dòng';
+
+  const rowsHtml = lines.map((line, idx) => {
+    const taxIsCustom = line.taxPercent === 'custom';
+    const flagAuto = line.priceAuto;
+    const flagShown = !!line.priceReason;
+    return `
+    <tr data-id="${line.id}">
+      <td class="col-stt">${idx+1}</td>
+      <td class="col-sku">
+        <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="Mã…" autocomplete="off" />
+      </td>
+      <td class="col-name">
+        <input type="text" data-field="name" value="${escapeAttr(line.name)}" placeholder="Tự động theo mã vật tư, hoặc gõ tay" />
+      </td>
+      <td class="col-unit">
+        <input type="text" data-field="unit" value="${escapeAttr(line.unit)}" readonly />
+      </td>
+      <td class="col-qty">
+        <input type="number" min="0" step="1" data-field="qty" value="${line.qty}" />
+      </td>
+      <td class="col-price">
+        <div class="price-row">
+          <input type="number" min="0" step="1000" data-field="price" value="${Math.round(line.price)}" />
+          ${flagShown ? `<button type="button" class="price-flag ${flagAuto?'auto':'manual'}" data-action="price-info" title="${escapeAttr(line.priceReason)}">${flagAuto?'✓':'!'}</button>` : ''}
+        </div>
+      </td>
+      <td class="col-discount">
+        <input type="number" min="0" max="100" step="1" data-field="discountPercent" value="${line.discountPercent}" title="Chiết khấu %" />
+      </td>
+      <td class="col-tax">
+        <select class="tax-select" data-field="taxPercent">
+          <option value="0" ${line.taxPercent==='0'?'selected':''}>0%</option>
+          <option value="1" ${line.taxPercent==='1'?'selected':''}>1%</option>
+          <option value="2" ${line.taxPercent==='2'?'selected':''}>2%</option>
+          <option value="3" ${line.taxPercent==='3'?'selected':''}>3%</option>
+          <option value="5" ${line.taxPercent==='5'?'selected':''}>5%</option>
+          <option value="8" ${line.taxPercent==='8'?'selected':''}>8%</option>
+          <option value="custom" ${taxIsCustom?'selected':''}>Khác…</option>
+        </select>
+        ${taxIsCustom ? `<input type="number" class="tax-custom" data-field="taxCustom" placeholder="%" value="${escapeAttr(line.taxCustom)}" />` : ''}
+      </td>
+      <td class="col-total">${fmtVND(lineTotal(line))}</td>
+      <td class="col-remove"><button type="button" class="remove-line-btn" data-action="remove" title="Xoá dòng">🗑</button></td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="card lines-card">
+      <div class="table-scroll">
+        <table class="lines-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mã vật tư</th>
+              <th>Tên vật tư</th>
+              <th>ĐVT</th>
+              <th>SL</th>
+              <th>Đơn giá (VNĐ)</th>
+              <th>CK %</th>
+              <th>Thuế</th>
+              <th>Thành tiền</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  renderTotals();
+}
+
 function renderTotals(){
-  const subtotal = lines.reduce((s,l)=> s + lineSubtotal(l), 0);
+  const gross = lines.reduce((s,l)=> s + lineGross(l), 0);
+  const discount = lines.reduce((s,l)=> s + lineDiscountAmount(l), 0);
   const tax = lines.reduce((s,l)=> s + lineTax(l), 0);
   const shipFee = parseFloat(document.getElementById('ordShipFee').value) || 0;
-  const grand = subtotal + tax + shipFee;
-  document.getElementById('totSubtotal').textContent = fmtVND(subtotal);
+  const grand = gross - discount + tax + shipFee;
+  document.getElementById('totSubtotal').textContent = fmtVND(gross);
+  document.getElementById('totDiscount').textContent = '- ' + fmtVND(discount);
   document.getElementById('totTax').textContent = fmtVND(tax);
   document.getElementById('totShip').textContent = fmtVND(shipFee);
   document.getElementById('totGrand').textContent = fmtVND(grand);
 }
 
-/* ---- event delegation for dynamic line-card inputs ---- */
+/* ---- event delegation for dynamic table rows ---- */
 const linesWrap = document.getElementById('linesWrap');
 
+function findLineFromEvent(e){
+  const tr = e.target.closest('tr[data-id]');
+  if(!tr) return null;
+  return { tr, line: lines.find(l=>l.id===tr.dataset.id) };
+}
+
 linesWrap.addEventListener('click', (e)=>{
-  const btn = e.target.closest('[data-action="remove"]');
-  if(btn){
-    const card = e.target.closest('.line-card');
-    removeLine(card.dataset.id);
+  if(e.target.closest('[data-action="remove"]')){
+    const found = findLineFromEvent(e);
+    if(found) removeLine(found.line.id);
+    return;
+  }
+  const infoBtn = e.target.closest('[data-action="price-info"]');
+  if(infoBtn){
+    showFloatTip(infoBtn, infoBtn.getAttribute('title'));
     return;
   }
   const opt = e.target.closest('.sku-suggest .opt');
   if(opt){
-    const card = e.target.closest('.line-card');
-    const line = lines.find(l=>l.id===card.dataset.id);
-    applySkuToLine(line, opt.dataset.sku);
-    renderLines();
+    const line = lines.find(l=>l.id===activeSuggestLineId);
+    if(line){ applySkuToLine(line, opt.dataset.sku); renderLines(); }
+    hideSuggest();
   }
 });
 
+let activeSuggestLineId = null;
+const suggestPanel = document.getElementById('skuSuggestPanel');
+const floatTip = document.getElementById('floatTip');
+
+function positionPanelUnder(panel, inputEl){
+  const r = inputEl.getBoundingClientRect();
+  panel.style.left = Math.round(r.left) + 'px';
+  panel.style.top = Math.round(r.bottom + 4) + 'px';
+  panel.style.width = Math.max(240, Math.round(r.width)) + 'px';
+}
+function hideSuggest(){ suggestPanel.classList.remove('open'); activeSuggestLineId = null; }
+function showFloatTip(anchorEl, text){
+  floatTip.textContent = text;
+  const r = anchorEl.getBoundingClientRect();
+  floatTip.style.left = Math.max(8, Math.round(r.left - 120)) + 'px';
+  floatTip.style.top = Math.round(r.bottom + 6) + 'px';
+  floatTip.classList.add('open');
+}
+function hideFloatTip(){ floatTip.classList.remove('open'); }
+
 linesWrap.addEventListener('input', (e)=>{
-  const card = e.target.closest('.line-card');
-  if(!card) return;
-  const line = lines.find(l=>l.id===card.dataset.id);
-  if(!line) return;
+  const found = findLineFromEvent(e);
+  if(!found) return;
+  const { tr, line } = found;
   const field = e.target.dataset.field;
   if(!field) return;
 
   if(field === 'sku'){
     line.sku = e.target.value;
-    const sug = card.querySelector('[data-role="suggest"]');
+    activeSuggestLineId = line.id;
     const results = skuSuggestions(e.target.value);
     if(results.length){
-      sug.innerHTML = results.map(r=>`
+      suggestPanel.innerHTML = results.map(r=>`
         <div class="opt" data-sku="${escapeAttr(r.maVatTu)}">
           <span class="stk">${r.tonCuoi.toLocaleString('vi-VN')} ${escapeAttr(r.dvt)}</span>
           <span class="sku">${escapeAttr(r.maVatTu)}</span><br/>
           <span class="nm">${escapeAttr(r.tenVatTu)}</span>
         </div>`).join('');
-      sug.classList.add('open');
+      positionPanelUnder(suggestPanel, e.target);
+      suggestPanel.classList.add('open');
     } else {
-      sug.innerHTML = e.target.value.trim() ? `<div class="empty">Không tìm thấy mã khớp.</div>` : '';
-      sug.classList.toggle('open', !!e.target.value.trim());
+      suggestPanel.innerHTML = e.target.value.trim() ? `<div class="empty">Không tìm thấy mã khớp.</div>` : '';
+      if(e.target.value.trim()){ positionPanelUnder(suggestPanel, e.target); suggestPanel.classList.add('open'); }
+      else hideSuggest();
     }
-    return; // don't re-render whole list on every keystroke — wait for blur/select
+    return; // don't re-render whole table on every keystroke — wait for blur/select
   }
 
   if(field === 'name'){ line.name = e.target.value; return; }
   if(field === 'unit'){ line.unit = e.target.value; return; }
-  if(field === 'qty'){ line.qty = parseFloat(e.target.value)||0; updateLineTotalDisplay(card, line); return; }
-  if(field === 'price'){ line.price = parseFloat(e.target.value)||0; line.priceAuto=false; updateLineTotalDisplay(card, line); return; }
-  if(field === 'taxCustom'){ line.taxCustom = e.target.value; updateLineTotalDisplay(card, line); return; }
+  if(field === 'qty'){ line.qty = parseFloat(e.target.value)||0; updateRowTotalDisplay(tr, line); return; }
+  if(field === 'price'){ line.price = parseFloat(e.target.value)||0; line.priceAuto=false; updateRowTotalDisplay(tr, line); return; }
+  if(field === 'discountPercent'){ line.discountPercent = Math.min(100, Math.max(0, parseFloat(e.target.value)||0)); updateRowTotalDisplay(tr, line); return; }
+  if(field === 'taxCustom'){ line.taxCustom = e.target.value; updateRowTotalDisplay(tr, line); return; }
 });
 
 linesWrap.addEventListener('change', (e)=>{
-  const card = e.target.closest('.line-card');
-  if(!card) return;
-  const line = lines.find(l=>l.id===card.dataset.id);
-  if(!line) return;
+  const found = findLineFromEvent(e);
+  if(!found) return;
+  const { line } = found;
   const field = e.target.dataset.field;
 
   if(field === 'sku'){
     // commit typed SKU (in case user typed an exact code and didn't click a suggestion)
     applySkuToLine(line, e.target.value);
+    hideSuggest();
     renderLines();
     return;
   }
@@ -1121,19 +1200,19 @@ linesWrap.addEventListener('change', (e)=>{
   }
 });
 
-function updateLineTotalDisplay(card, line){
-  const valEl = card.querySelector('.line-total-box .val');
-  if(valEl) valEl.textContent = fmtVND(lineTotal(line));
-  const taxCustomInput = card.querySelector('[data-field="taxCustom"]');
-  if(taxCustomInput) taxCustomInput.style.display = (line.taxPercent==='custom') ? 'block' : 'none';
+function updateRowTotalDisplay(tr, line){
+  const totalCell = tr.querySelector('.col-total');
+  if(totalCell) totalCell.textContent = fmtVND(lineTotal(line));
   renderTotals();
 }
 
-// close suggestion dropdowns when clicking elsewhere
+// close suggestion / tooltip panels when clicking elsewhere or scrolling
 document.addEventListener('click', (e)=>{
-  if(e.target.closest('.sku-input') || e.target.closest('.sku-suggest')) return;
-  document.querySelectorAll('.sku-suggest.open').forEach(el=> el.classList.remove('open'));
+  if(e.target.closest('.sku-input') || e.target.closest('.sku-suggest')) { /* keep open */ }
+  else hideSuggest();
+  if(!e.target.closest('[data-action="price-info"]')) hideFloatTip();
 });
+document.addEventListener('scroll', ()=>{ hideSuggest(); hideFloatTip(); }, true);
 
 document.getElementById('addLineBtn').addEventListener('click', addLine);
 
