@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PANEL PLUS Việt Nam · Lập đơn hàng nhanh</title>
+<title data-i18n="pageTitleOrder">PANEL PLUS Việt Nam · Lập đơn hàng nhanh</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="./i18n_1.js"></script>
 <style>
   :root{
     --ink:#1c1a17;
@@ -64,6 +65,15 @@
     text-decoration:none;white-space:nowrap;
   }
   .nav-link:hover{background:rgba(255,255,255,.24);}
+
+  .lang-switcher{
+    font-size:12.5px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+    padding:6px 10px;border-radius:999px;font-family:inherit;cursor:pointer;
+    -webkit-appearance:none;appearance:none;
+  }
+  .lang-switcher:hover{background:rgba(255,255,255,.24);}
+  .lang-switcher option{color:#1c1a17;}
   h1{font-size:clamp(22px,3.4vw,32px);margin:0 0 6px;font-weight:800;letter-spacing:-.01em;}
   .lede{opacity:.9;max-width:640px;font-size:14.5px;margin:0;}
 
@@ -315,11 +325,13 @@
   <div class="top-inner">
     <div class="brandrow">
       <span class="brand-badge">PANEL PLUS</span>
-      <span class="brand-sub">Việt Nam · Lập đơn hàng nhanh</span>
-      <a class="nav-link" href="./index.html">← Tra cứu tồn kho</a>
+      <span class="brand-sub" data-i18n="brandSubOrder">Việt Nam · Lập đơn hàng nhanh</span>
+      <span id="langSwitcherWrap"></span>
+      <a class="nav-link" href="./index.html" data-i18n="navToLookup">← Tra cứu tồn kho</a>
+      <a class="nav-link" href="./crm.html">CRM</a>
     </div>
-    <h1>Lập đơn hàng nhanh</h1>
-    <p class="lede">Điền mã vật tư để tự nhảy tên sản phẩm và đơn giá theo dữ liệu tồn kho / bảng giá. Có thể thêm, xoá dòng và tự tính thuế, phí vận chuyển.</p>
+    <h1 data-i18n="h1Order">Lập đơn hàng nhanh</h1>
+    <p class="lede" data-i18n="ledeOrder">Điền mã vật tư để tự nhảy tên sản phẩm và đơn giá theo dữ liệu tồn kho / bảng giá. Có thể thêm, xoá dòng và tự tính thuế, phí vận chuyển.</p>
   </div>
 </header>
 
@@ -328,38 +340,38 @@
   <!-- ============ DATA SOURCE ============ -->
   <section class="card source-card">
     <div class="source-head">
-      <h2>Nguồn dữ liệu (Tồn kho · Bảng giá · Phân loại màu)</h2>
-      <span class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText">Chưa có dữ liệu</span></span>
+      <h2 data-i18n="sourceCardTitleOrder">Nguồn dữ liệu (Tồn kho · Bảng giá · Phân loại màu)</h2>
+      <span class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText" data-i18n="statusNoData">Chưa có dữ liệu</span></span>
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" data-tab="sheet">Liên kết Google Sheet</button>
-      <button class="tab-btn" data-tab="file">Tải file Excel lên</button>
+      <button class="tab-btn active" data-tab="sheet" data-i18n="tabSheet">Liên kết Google Sheet</button>
+      <button class="tab-btn" data-tab="file" data-i18n="tabFileOrder">Tải file Excel lên</button>
     </div>
 
     <div class="tab-panel active" id="tab-sheet">
       <div class="field-row">
         <div class="field wide">
-          <label for="sheetUrl">Link Google Sheet (chia sẻ ở chế độ "Bất kỳ ai có link – Người xem")</label>
+          <label for="sheetUrl" data-i18n="sheetUrlLabel">Link Google Sheet (chia sẻ ở chế độ "Bất kỳ ai có link – Người xem")</label>
           <input type="url" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…/edit" />
         </div>
       </div>
       <div class="field-row">
         <div class="field small">
-          <label for="tabTonKho">Tên tab tồn kho</label>
+          <label for="tabTonKho" data-i18n="tabTonKhoLabel">Tên tab tồn kho</label>
           <input type="text" id="tabTonKho" value="TonKho" />
         </div>
         <div class="field small">
-          <label for="tabBangGia">Tên tab bảng giá</label>
+          <label for="tabBangGia" data-i18n="tabBangGiaLabel">Tên tab bảng giá</label>
           <input type="text" id="tabBangGia" value="BangGia" />
         </div>
         <div class="field small">
-          <label for="tabPhanLoaiMau">Tên tab phân loại màu</label>
+          <label for="tabPhanLoaiMau" data-i18n="tabPhanLoaiMauLabel">Tên tab phân loại màu</label>
           <input type="text" id="tabPhanLoaiMau" value="PhanLoaiMau" />
         </div>
-        <button class="btn" id="loadSheetBtn">Tải dữ liệu</button>
+        <button class="btn" id="loadSheetBtn" data-i18n="loadDataBtn">Tải dữ liệu</button>
       </div>
-      <p class="hint">
+      <p class="hint" data-i18n-html="sheetHintOrder">
         Dùng đúng 1 Google Sheet có đủ 3 tab: <code>TonKho</code> (Mã vật tư / Tên vật tư / Đvt / Tồn cuối),
         <code>BangGia</code> (Loai_Van / Cap_Keo / Nhom_Mau / Do_Day_mm / Kho / Don_Gia_VND / Ghi_Chu) và
         <code>PhanLoaiMau</code> (Ma_Mau / HPL_Code / Phan_Loai) — đúng cấu trúc file gốc bạn đang dùng cho Apps Script tra cứu giá.
@@ -370,19 +382,19 @@
     <div class="tab-panel" id="tab-file">
       <label class="drop" id="dropZone" for="fileInput">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5c584e" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-        <div>Kéo thả file <b>.xlsx</b> vào đây, hoặc bấm để chọn file</div>
+        <div data-i18n-html="dropTextOrder">Kéo thả file <b>.xlsx</b> vào đây, hoặc bấm để chọn file</div>
         <div class="fname" id="fileName"></div>
       </label>
       <input type="file" id="fileInput"
         accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
         class="visually-hidden-input" />
-      <button type="button" class="btn ghost" id="fileInputFallbackBtn" style="width:100%;margin-top:8px;">Không mở được hộp thoại chọn file? Bấm vào đây</button>
-      <p class="hint">
+      <button type="button" class="btn ghost" id="fileInputFallbackBtn" style="width:100%;margin-top:8px;" data-i18n="fileFallbackBtn">Không mở được hộp thoại chọn file? Bấm vào đây</button>
+      <p class="hint" data-i18n-html="fileHintOrder">
         Dùng đúng file Excel gốc có đủ 3 sheet <code>TonKho</code> (hoặc <code>Main</code>), <code>BangGia</code>, <code>PhanLoaiMau</code> — công cụ tự tìm đúng sheet theo tên, không cần chỉnh sửa gì trước khi tải lên.
       </p>
       <div class="ipad-note" id="ipadNote">
-        <p style="margin:0 0 8px;font-weight:700;color:var(--warn);">⚠️ Trên iPad (Chrome/Safari) mà nút chọn file không mở hộp thoại, hoặc bấm "Tải dữ liệu" ở tab Google Sheet báo lỗi "Failed to fetch"?</p>
-        <p style="margin:0 0 10px;">Đây là do trang đang được mở trực tiếp từ file tải về (<code>file://</code>) thay vì từ một địa chỉ web — trình duyệt trên iPad chặn cả việc mở hộp thoại chọn file lẫn việc tải dữ liệu từ Google Sheet trong trường hợp này. Cách sửa: đưa file HTML này lên một địa chỉ web thật (ví dụ GitHub Pages, giống như trang tra cứu tồn kho), rồi mở qua link <code>https://...</code> đó thay vì mở file trực tiếp.</p>
+        <p style="margin:0 0 8px;font-weight:700;color:var(--warn);" data-i18n="ipadWarnTitleOrder">⚠️ Trên iPad (Chrome/Safari) mà nút chọn file không mở hộp thoại, hoặc bấm "Tải dữ liệu" ở tab Google Sheet báo lỗi "Failed to fetch"?</p>
+        <p style="margin:0 0 10px;" data-i18n-html="ipadWarnBodyOrder">Đây là do trang đang được mở trực tiếp từ file tải về (<code>file://</code>) thay vì từ một địa chỉ web — trình duyệt trên iPad chặn cả việc mở hộp thoại chọn file lẫn việc tải dữ liệu từ Google Sheet trong trường hợp này. Cách sửa: đưa file HTML này lên một địa chỉ web thật (ví dụ GitHub Pages, giống như trang tra cứu tồn kho), rồi mở qua link <code>https://...</code> đó thay vì mở file trực tiếp.</p>
       </div>
     </div>
   </section>
@@ -391,81 +403,163 @@
   <section class="card order-info">
     <div class="field-row">
       <div class="field">
-        <label for="ordCustomer">Khách hàng</label>
-        <input type="text" id="ordCustomer" placeholder="Tên công ty / cá nhân khách hàng" />
+        <label for="ordCustomer" data-i18n="customerLabel">Khách hàng</label>
+        <input type="text" id="ordCustomer" data-i18n-placeholder="customerPlaceholder" placeholder="Tên công ty / cá nhân khách hàng" />
       </div>
       <div class="field small">
-        <label for="ordCode">Mã đơn hàng</label>
+        <label for="ordCode" data-i18n="orderCodeLabel">Mã đơn hàng</label>
         <input type="text" id="ordCode" />
       </div>
       <div class="field small">
-        <label for="ordDate">Ngày lập</label>
+        <label for="ordDate" data-i18n="orderDateLabel">Ngày lập</label>
         <input type="date" id="ordDate" />
       </div>
     </div>
     <div class="field-row">
       <div class="field wide">
-        <label for="ordShipTo">Vận chuyển đến (địa chỉ giao hàng)</label>
-        <input type="text" id="ordShipTo" placeholder="Địa chỉ nhận hàng…" />
+        <label for="ordShipTo" data-i18n="shipToLabel">Vận chuyển đến (địa chỉ giao hàng)</label>
+        <input type="text" id="ordShipTo" data-i18n-placeholder="shipToPlaceholder" placeholder="Địa chỉ nhận hàng…" />
       </div>
       <div class="field small">
-        <label for="ordShipFee">Đơn giá vận chuyển (VNĐ)</label>
+        <label for="ordShipFee" data-i18n="shipFeeLabel">Đơn giá vận chuyển (VNĐ)</label>
         <input type="number" id="ordShipFee" min="0" step="1000" value="0" />
       </div>
       <div class="field small">
-        <label for="ordSaleRep">Người lập đơn</label>
-        <input type="text" id="ordSaleRep" placeholder="Tên nhân viên" />
+        <label for="ordSaleRep" data-i18n="saleRepLabel">Người lập đơn</label>
+        <input type="text" id="ordSaleRep" data-i18n-placeholder="saleRepPlaceholder" placeholder="Tên nhân viên" />
+      </div>
+    </div>
+
+    <!-- Bổ sung: các trường còn lại của sheet Orders trong CRM_Database_Template -->
+    <div class="field-row">
+      <div class="field small">
+        <label for="ordPaymentMethod">Hình thức thanh toán</label>
+        <select id="ordPaymentMethod"><option value="">— Đang tải —</option></select>
+      </div>
+      <div class="field small">
+        <label for="ordQuoteExpiry">Ngày hết hiệu lực báo giá</label>
+        <input type="date" id="ordQuoteExpiry" />
+      </div>
+      <div class="field small">
+        <label for="ordDeliveryDate">Ngày giao hàng</label>
+        <input type="date" id="ordDeliveryDate" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="ordReceiver">Người nhận hàng</label>
+        <input type="text" id="ordReceiver" placeholder="Tên người nhận hàng" />
+      </div>
+      <div class="field small">
+        <label for="ordReceiverPhone">SĐT người nhận</label>
+        <input type="text" id="ordReceiverPhone" placeholder="09xx xxx xxx" />
+      </div>
+      <div class="field small">
+        <label for="ordVehicle">Loại xe chuyên chở</label>
+        <select id="ordVehicle"><option value="">— Đang tải —</option></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field small">
+        <label for="ordDistance">Quãng đường (km)</label>
+        <input type="number" id="ordDistance" min="0" step="1" />
+      </div>
+      <div class="field small">
+        <label for="ordEta">Thời gian ước chừng hoàn thành chuyến xe</label>
+        <input type="text" id="ordEta" placeholder="VD: 2 giờ" />
+      </div>
+      <div class="field wide">
+        <label for="ordDescription">Diễn giải</label>
+        <input type="text" id="ordDescription" placeholder="Ghi chú thêm về đơn hàng…" />
       </div>
     </div>
   </section>
 
   <!-- ============ ORDER LINES ============ -->
   <div class="section-title">
-    <h2>Danh sách sản phẩm</h2>
+    <h2 data-i18n="lineListTitle">Danh sách sản phẩm</h2>
     <span class="sub" id="lineCount">0 dòng</span>
   </div>
   <div id="linesWrap"></div>
-  <p class="table-hint">💡 Kéo ngang để xem hết các cột trên màn hình nhỏ. Chạm biểu tượng cạnh Đơn giá để xem lý do tự đoán giá.</p>
+  <p class="table-hint" data-i18n="tableHint">💡 Kéo ngang để xem hết các cột trên màn hình nhỏ. Chạm biểu tượng cạnh Đơn giá để xem lý do tự đoán giá.</p>
   <div class="sku-suggest" id="skuSuggestPanel"></div>
   <div class="float-tip" id="floatTip"></div>
   <div class="add-line-row">
-    <button class="btn" id="addLineBtn">+ Thêm dòng sản phẩm</button>
+    <button class="btn" id="addLineBtn" data-i18n="addLineBtn">+ Thêm dòng sản phẩm</button>
   </div>
 
   <!-- ============ TOTALS ============ -->
   <section class="card totals-card">
     <div class="totals-row">
-      <span class="lbl">Tổng tiền hàng (trước chiết khấu, trước thuế)</span>
+      <span class="lbl" data-i18n="totSubtotalLabel">Tổng tiền hàng (trước chiết khấu, trước thuế)</span>
       <span class="val" id="totSubtotal">0 ₫</span>
     </div>
     <div class="totals-row">
-      <span class="lbl">Tổng chiết khấu</span>
+      <span class="lbl" data-i18n="totDiscountLabel">Tổng chiết khấu</span>
       <span class="val" id="totDiscount">0 ₫</span>
     </div>
     <div class="totals-row">
-      <span class="lbl">Tổng tiền thuế</span>
+      <span class="lbl" data-i18n="totTaxLabel">Tổng tiền thuế</span>
       <span class="val" id="totTax">0 ₫</span>
     </div>
     <div class="totals-row">
-      <span class="lbl">Phí vận chuyển</span>
+      <span class="lbl" data-i18n="totShipLabel">Phí vận chuyển</span>
       <span class="val" id="totShip">0 ₫</span>
     </div>
     <div class="totals-row grand">
-      <span class="lbl">TỔNG CỘNG THANH TOÁN</span>
+      <span class="lbl" data-i18n="totGrandLabel">TỔNG CỘNG THANH TOÁN</span>
       <span class="val" id="totGrand">0 ₫</span>
     </div>
   </section>
 
   <div class="action-row">
-    <button class="btn ghost" id="clearOrderBtn">Xoá toàn bộ đơn</button>
-    <button class="btn" id="printBtn">In / Xuất PDF đơn hàng</button>
+    <button class="btn ghost" id="clearOrderBtn" data-i18n="clearOrderBtn">Xoá toàn bộ đơn</button>
+    <button class="btn" id="printBtn" data-i18n="printBtn">In / Xuất PDF đơn hàng</button>
+    <button class="btn" id="saveServerBtn" style="background:#2f6b3a;color:#fff;">💾 Lưu đơn hàng vào hệ thống</button>
   </div>
+  <div id="saveStatus" style="margin-top:10px;font-size:14px;"></div>
 
 </div>
 
-<footer>PANEL PLUS Việt Nam · Công cụ nội bộ · Giá tự động chỉ mang tính gợi ý, luôn kiểm tra lại trước khi chốt đơn.</footer>
+<footer data-i18n="footerOrder">PANEL PLUS Việt Nam · Công cụ nội bộ · Giá tự động chỉ mang tính gợi ý, luôn kiểm tra lại trước khi chốt đơn.</footer>
 
 <script>
+/* =========================================================================
+   KẾT NỐI BACKEND — Google Apps Script Web App (PHẢI khớp với crm.html:
+   cùng 1 URL sau khi Deploy, cùng 1 API_KEY trong Config.gs). Xem README.md.
+   ========================================================================= */
+const API_BASE = 'https://script.google.com/macros/s/DAN_URL_SAU_KHI_DEPLOY/exec';
+const API_KEY  = 'PANELPLUS-CRM-2026-DOI-CHUOI-NAY';
+
+async function callApi(action, payload = {}) {
+  const res = await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // tránh CORS preflight
+    body: JSON.stringify({ action, apiKey: API_KEY, ...payload })
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || 'Lỗi không xác định từ API');
+  return json.data;
+}
+
+/* Nạp danh mục dropdown (Hình thức thanh toán, Loại xe...) từ sheet DanhMuc */
+let PNP_DANH_MUC = {};
+async function loadDanhMucForOrder(){
+  try{
+    PNP_DANH_MUC = await callApi('getDanhMuc');
+  }catch(err){
+    console.error('Không tải được DanhMuc:', err);
+    PNP_DANH_MUC = {};
+  }
+  const fill = (id, values, placeholder) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = `<option value="">${placeholder}</option>` + (values||[]).map(v=>`<option value="${v}">${v}</option>`).join('');
+  };
+  fill('ordPaymentMethod', PNP_DANH_MUC['Hình thức thanh toán'], '— Chọn hình thức —');
+  fill('ordVehicle', PNP_DANH_MUC['Loại xe'], '— Chọn loại xe —');
+}
+
 /* =========================================================================
    0. TEXT NORMALIZATION
    ========================================================================= */
@@ -612,7 +706,7 @@ function lookupPrice(tenVatTu){
   const kho = parseSheetSize(tenVatTu);
 
   if(!loaiVan || !capKeo || !doDay || !kho || !BANGGIA.length){
-    return { price:null, reason:'Không đủ thông tin để tự đoán giá — vui lòng nhập tay.' };
+    return { price:null, reason:tt('priceReasonInsufficient') };
   }
 
   const loaiVanN = norm(loaiVan), capKeoN = norm(capKeo), khoN = norm(kho);
@@ -627,12 +721,12 @@ function lookupPrice(tenVatTu){
 
   if(isRaw){
     const hit = candidates.find(r => !r.nhomMau);
-    if(hit) return { price: hit.gia, reason: `Khớp: ${loaiVan} · ${capKeo} · ${doDay}mm · ${kho}` };
-    return { price:null, reason:'Không tìm thấy dòng giá khớp trong Bảng giá — vui lòng nhập tay.' };
+    if(hit) return { price: hit.gia, reason: tt('priceReasonMatched', {info: `${loaiVan} · ${capKeo} · ${doDay}mm · ${kho}`}) };
+    return { price:null, reason:tt('priceReasonNoRow') };
   }
 
   if(!nhomMau){
-    return { price:null, reason:'Ván đã phủ bề mặt/màu nhưng không xác định được nhóm màu (mã màu chưa có trong PhanLoaiMau) — vui lòng nhập tay để tránh sai giá.' };
+    return { price:null, reason:tt('priceReasonNoGroup') };
   }
   const nmUp = nhomMau.toUpperCase();
   let hit = null;
@@ -645,8 +739,8 @@ function lookupPrice(tenVatTu){
     hit = candidates.find(r => (r.nhomMau||'').toUpperCase() === nmUp) ||
           candidates.find(r => (r.nhomMau||'').toUpperCase().includes(nmUp));
   }
-  if(hit) return { price: hit.gia, reason: `Khớp: ${loaiVan} · ${capKeo} · ${nhomMau} · ${doDay}mm · ${kho}` };
-  return { price:null, reason:'Không tìm thấy dòng giá khớp trong Bảng giá — vui lòng nhập tay.' };
+  if(hit) return { price: hit.gia, reason: tt('priceReasonMatched', {info: `${loaiVan} · ${capKeo} · ${nhomMau} · ${doDay}mm · ${kho}`}) };
+  return { price:null, reason:tt('priceReasonNoRow') };
 }
 
 /* =========================================================================
@@ -747,7 +841,22 @@ function csvToMatrix(text){
 /* =========================================================================
    5. DATA LOADING
    ========================================================================= */
-function setStatus(kind, text){
+function tt(key, vars){ return (window.PNP_I18N ? PNP_I18N.t(key, vars) : key); }
+function localeForLang(){
+  const l = (window.PNP_I18N ? PNP_I18N.getLang() : 'vi');
+  return l==='en' ? 'en-US' : (l==='th' ? 'th-TH' : 'vi-VN');
+}
+
+let lastStatus = {kind:'', key:'statusNoData', vars:null};
+function setStatus(kind, key, vars){
+  lastStatus = {kind, key, vars};
+  const pill = document.getElementById('statusPill');
+  const t = document.getElementById('statusText');
+  pill.className = 'status-pill' + (kind ? ' '+kind : '');
+  t.textContent = tt(key, vars);
+}
+function setStatusLiteral(kind, text){
+  lastStatus = null;
   const pill = document.getElementById('statusPill');
   const t = document.getElementById('statusText');
   pill.className = 'status-pill' + (kind ? ' '+kind : '');
@@ -773,11 +882,11 @@ async function loadFromGoogleSheet(){
   const tabTonKho = document.getElementById('tabTonKho').value.trim() || 'TonKho';
   const tabBangGia = document.getElementById('tabBangGia').value.trim() || 'BangGia';
   const tabPhanLoaiMau = document.getElementById('tabPhanLoaiMau').value.trim() || 'PhanLoaiMau';
-  if(!urlInput){ setStatus('bad','Vui lòng dán link Google Sheet'); return; }
+  if(!urlInput){ setStatus('bad','statusPleaseInputLinkOrder'); return; }
   const id = extractSheetId(urlInput);
-  if(!id){ setStatus('bad','Không đọc được ID từ link, kiểm tra lại'); return; }
+  if(!id){ setStatus('bad','statusBadLink'); return; }
 
-  setStatus('', 'Đang tải…');
+  setStatus('', 'statusLoading');
   const errors = [];
   let tonkhoResult = { ok:false, rows:[] };
   let banggiaResult = { ok:false, rows:[] };
@@ -786,20 +895,20 @@ async function loadFromGoogleSheet(){
   try{
     const m = await fetchSheetTabCsv(id, tabTonKho);
     tonkhoResult = parseTonKhoMatrix(m);
-    if(!tonkhoResult.ok) errors.push('Tồn kho: '+tonkhoResult.error);
-  }catch(e){ errors.push('Tồn kho: '+e.message); }
+    if(!tonkhoResult.ok) errors.push('TonKho: '+tonkhoResult.error);
+  }catch(e){ errors.push('TonKho: '+e.message); }
 
   try{
     const m = await fetchSheetTabCsv(id, tabBangGia);
     banggiaResult = parseBangGiaMatrix(m);
-    if(!banggiaResult.ok) errors.push('Bảng giá: '+banggiaResult.error);
-  }catch(e){ errors.push('Bảng giá: '+e.message); }
+    if(!banggiaResult.ok) errors.push('BangGia: '+banggiaResult.error);
+  }catch(e){ errors.push('BangGia: '+e.message); }
 
   try{
     const m = await fetchSheetTabCsv(id, tabPhanLoaiMau);
     phanloaiResult = parsePhanLoaiMauMatrix(m);
-    if(!phanloaiResult.ok) errors.push('Phân loại màu: '+phanloaiResult.error);
-  }catch(e){ errors.push('Phân loại màu: '+e.message); }
+    if(!phanloaiResult.ok) errors.push('PhanLoaiMau: '+phanloaiResult.error);
+  }catch(e){ errors.push('PhanLoaiMau: '+e.message); }
 
   applyParsed(tonkhoResult.ok?tonkhoResult.rows:[], banggiaResult.ok?banggiaResult.rows:[], phanloaiResult.ok?phanloaiResult.rows:[], 'Google Sheet', errors);
 
@@ -820,7 +929,7 @@ function findSheetByNames(wb, candidateNames){
 }
 
 function loadFromFile(file){
-  setStatus('', 'Đang đọc file…');
+  setStatus('', 'statusReadingFile');
   const reader = new FileReader();
   reader.onload = (e) => {
     try{
@@ -838,24 +947,24 @@ function loadFromFile(file){
       if(tkName){
         const m = XLSX.utils.sheet_to_json(wb.Sheets[tkName], {header:1, raw:true});
         tonkhoResult = parseTonKhoMatrix(m);
-        if(!tonkhoResult.ok) errors.push('Tồn kho ('+tkName+'): '+tonkhoResult.error);
-      } else errors.push('Không tìm thấy sheet "TonKho" / "Main" trong file.');
+        if(!tonkhoResult.ok) errors.push('TonKho ('+tkName+'): '+tonkhoResult.error);
+      } else errors.push(tt('statusMissingTonKhoSheet'));
 
       if(bgName){
         const m = XLSX.utils.sheet_to_json(wb.Sheets[bgName], {header:1, raw:true});
         banggiaResult = parseBangGiaMatrix(m);
-        if(!banggiaResult.ok) errors.push('Bảng giá ('+bgName+'): '+banggiaResult.error);
-      } else errors.push('Không tìm thấy sheet "BangGia" trong file.');
+        if(!banggiaResult.ok) errors.push('BangGia ('+bgName+'): '+banggiaResult.error);
+      } else errors.push(tt('statusMissingBangGiaSheet'));
 
       if(plmName){
         const m = XLSX.utils.sheet_to_json(wb.Sheets[plmName], {header:1, raw:true});
         phanloaiResult = parsePhanLoaiMauMatrix(m);
-        if(!phanloaiResult.ok) errors.push('Phân loại màu ('+plmName+'): '+phanloaiResult.error);
-      } else errors.push('Không tìm thấy sheet "PhanLoaiMau" trong file.');
+        if(!phanloaiResult.ok) errors.push('PhanLoaiMau ('+plmName+'): '+phanloaiResult.error);
+      } else errors.push(tt('statusMissingPhanLoaiSheet'));
 
       applyParsed(tonkhoResult.ok?tonkhoResult.rows:[], banggiaResult.ok?banggiaResult.rows:[], phanloaiResult.ok?phanloaiResult.rows:[], file.name, errors);
     }catch(err){
-      setStatus('bad','Lỗi đọc file: '+err.message);
+      setStatusLiteral('bad', tt('statusFileError', {e: err.message}));
     }
   };
   reader.readAsArrayBuffer(file);
@@ -869,17 +978,19 @@ function applyParsed(tonkhoRows, banggiaRows, phanloaiRows, sourceLabel, errors)
   TONKHO.forEach(r=>{ if(r.maVatTu) TONKHO_BY_SKU.set(norm(r.maVatTu), r); });
 
   if(!TONKHO.length && !BANGGIA.length){
-    setStatus('bad', (errors&&errors.length) ? errors.join(' · ') : 'Không đọc được dữ liệu.');
+    setStatusLiteral('bad', (errors&&errors.length) ? errors.join(' · ') : tt('statusNoDataRead'));
     return;
   }
-  const parts = [];
-  parts.push(`${TONKHO.length.toLocaleString('vi-VN')} SKU tồn kho`);
-  parts.push(`${BANGGIA.length.toLocaleString('vi-VN')} dòng bảng giá`);
-  parts.push(`${PHANLOAIMAU.length.toLocaleString('vi-VN')} mã màu`);
+  const locale = localeForLang();
   const kind = (errors && errors.length) ? 'warn' : 'ok';
-  let text = `Đã tải: ${parts.join(' · ')} — từ ${sourceLabel}`;
+  let text = tt('statusLoadedOrder', {
+    skus: TONKHO.length.toLocaleString(locale),
+    prices: BANGGIA.length.toLocaleString(locale),
+    colors: PHANLOAIMAU.length.toLocaleString(locale),
+    src: sourceLabel
+  });
   if(errors && errors.length) text += ` (⚠ ${errors.join(' | ')})`;
-  setStatus(kind==='warn'?'':'ok', text);
+  setStatusLiteral(kind==='warn'?'':'ok', text);
 
   // re-run price/name lookups on existing lines with the new data
   recalcAllLines();
@@ -982,7 +1093,7 @@ function applySkuToLine(line, skuRaw){
     line.name = '';
     line.unit = '';
     line.priceAuto = false;
-    line.priceReason = skuRaw ? 'Không tìm thấy mã vật tư này trong dữ liệu tồn kho.' : '';
+    line.priceReason = skuRaw ? tt('skuNotFound') : '';
   }
 }
 
@@ -1010,7 +1121,7 @@ function escapeAttr(s){
 
 function renderLines(){
   const wrap = document.getElementById('linesWrap');
-  document.getElementById('lineCount').textContent = lines.length + ' dòng';
+  document.getElementById('lineCount').textContent = lines.length + ' ' + tt('lineCountUnit');
 
   const rowsHtml = lines.map((line, idx) => {
     const taxIsCustom = line.taxPercent === 'custom';
@@ -1020,10 +1131,10 @@ function renderLines(){
     <tr data-id="${line.id}">
       <td class="col-stt">${idx+1}</td>
       <td class="col-sku">
-        <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="Mã…" autocomplete="off" />
+        <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="${tt('skuPlaceholder')}" autocomplete="off" />
       </td>
       <td class="col-name">
-        <input type="text" data-field="name" value="${escapeAttr(line.name)}" placeholder="Tự động theo mã vật tư, hoặc gõ tay" />
+        <input type="text" data-field="name" value="${escapeAttr(line.name)}" placeholder="${tt('namePlaceholder')}" />
       </td>
       <td class="col-unit">
         <input type="text" data-field="unit" value="${escapeAttr(line.unit)}" readonly />
@@ -1038,7 +1149,7 @@ function renderLines(){
         </div>
       </td>
       <td class="col-discount">
-        <input type="number" min="0" max="100" step="1" data-field="discountPercent" value="${line.discountPercent}" title="Chiết khấu %" />
+        <input type="number" min="0" max="100" step="1" data-field="discountPercent" value="${line.discountPercent}" title="${tt('thDiscount')}" />
       </td>
       <td class="col-tax">
         <select class="tax-select" data-field="taxPercent">
@@ -1048,12 +1159,12 @@ function renderLines(){
           <option value="3" ${line.taxPercent==='3'?'selected':''}>3%</option>
           <option value="5" ${line.taxPercent==='5'?'selected':''}>5%</option>
           <option value="8" ${line.taxPercent==='8'?'selected':''}>8%</option>
-          <option value="custom" ${taxIsCustom?'selected':''}>Khác…</option>
+          <option value="custom" ${taxIsCustom?'selected':''}>${tt('taxOther')}</option>
         </select>
         ${taxIsCustom ? `<input type="number" class="tax-custom" data-field="taxCustom" placeholder="%" value="${escapeAttr(line.taxCustom)}" />` : ''}
       </td>
       <td class="col-total">${fmtVND(lineTotal(line))}</td>
-      <td class="col-remove"><button type="button" class="remove-line-btn" data-action="remove" title="Xoá dòng">🗑</button></td>
+      <td class="col-remove"><button type="button" class="remove-line-btn" data-action="remove" title="${tt('removeLineTitle')}">🗑</button></td>
     </tr>`;
   }).join('');
 
@@ -1064,14 +1175,14 @@ function renderLines(){
           <thead>
             <tr>
               <th>#</th>
-              <th>Mã vật tư</th>
-              <th>Tên vật tư</th>
-              <th>ĐVT</th>
-              <th>SL</th>
-              <th>Đơn giá (VNĐ)</th>
-              <th>CK %</th>
-              <th>Thuế</th>
-              <th>Thành tiền</th>
+              <th>${tt('thSkuShort')}</th>
+              <th>${tt('thNameShort')}</th>
+              <th>${tt('thUnitShort')}</th>
+              <th>${tt('thQty')}</th>
+              <th>${tt('thUnitPrice')}</th>
+              <th>${tt('thDiscount')}</th>
+              <th>${tt('thTax')}</th>
+              <th>${tt('thTotal')}</th>
               <th></th>
             </tr>
           </thead>
@@ -1158,14 +1269,14 @@ linesWrap.addEventListener('input', (e)=>{
     if(results.length){
       suggestPanel.innerHTML = results.map(r=>`
         <div class="opt" data-sku="${escapeAttr(r.maVatTu)}">
-          <span class="stk">${r.tonCuoi.toLocaleString('vi-VN')} ${escapeAttr(r.dvt)}</span>
+          <span class="stk">${r.tonCuoi.toLocaleString(localeForLang())} ${escapeAttr(r.dvt)}</span>
           <span class="sku">${escapeAttr(r.maVatTu)}</span><br/>
           <span class="nm">${escapeAttr(r.tenVatTu)}</span>
         </div>`).join('');
       positionPanelUnder(suggestPanel, e.target);
       suggestPanel.classList.add('open');
     } else {
-      suggestPanel.innerHTML = e.target.value.trim() ? `<div class="empty">Không tìm thấy mã khớp.</div>` : '';
+      suggestPanel.innerHTML = e.target.value.trim() ? `<div class="empty">${tt('noSkuMatch')}</div>` : '';
       if(e.target.value.trim()){ positionPanelUnder(suggestPanel, e.target); suggestPanel.classList.add('open'); }
       else hideSuggest();
     }
@@ -1217,7 +1328,7 @@ document.addEventListener('scroll', ()=>{ hideSuggest(); hideFloatTip(); }, true
 document.getElementById('addLineBtn').addEventListener('click', addLine);
 
 document.getElementById('clearOrderBtn').addEventListener('click', ()=>{
-  if(!confirm('Xoá toàn bộ danh sách sản phẩm trong đơn hàng này?')) return;
+  if(!confirm(tt('clearOrderConfirm'))) return;
   lines = [newLine()];
   renderLines();
 });
@@ -1225,6 +1336,93 @@ document.getElementById('clearOrderBtn').addEventListener('click', ()=>{
 document.getElementById('printBtn').addEventListener('click', ()=> window.print());
 
 document.getElementById('ordShipFee').addEventListener('input', renderTotals);
+
+/* =========================================================================
+   7b. LƯU ĐƠN HÀNG VÀO HỆ THỐNG (API -> PostgreSQL)
+   ========================================================================= */
+let PNP_ORDER_MA_KH = null; // gắn với 1 khách hàng thật trong CRM, nếu mở từ đó
+
+function initFromQueryParams(){
+  const params = new URLSearchParams(location.search);
+  const maKh = params.get('ma_kh');
+  const ten = params.get('ten');
+  if(ten) document.getElementById('ordCustomer').value = ten;
+  if(maKh){
+    PNP_ORDER_MA_KH = maKh;
+    const custInput = document.getElementById('ordCustomer');
+    custInput.readOnly = true;
+    custInput.style.background = '#F3EFE4';
+    custInput.title = 'Khách hàng được chọn từ CRM — mở lại từ CRM nếu muốn đổi khách khác';
+  }
+}
+
+async function saveOrderToServer(){
+  const statusEl = document.getElementById('saveStatus');
+  if(!PNP_ORDER_MA_KH){
+    statusEl.innerHTML = '<span style="color:#b3261e">⚠️ Đơn hàng này chưa gắn với khách hàng nào trong CRM. Hãy mở công cụ này bằng nút "＋ Lên đơn hàng mới" từ trang CRM để lưu được vào hệ thống.</span>';
+    return;
+  }
+  const validLines = lines.filter(l => l.sku && (parseFloat(l.qty)||0) > 0);
+  if(!validLines.length){
+    statusEl.innerHTML = '<span style="color:#b3261e">⚠️ Chưa có dòng sản phẩm hợp lệ (thiếu mã SKU hoặc số lượng) để lưu.</span>';
+    return;
+  }
+
+  // ---- Header đơn hàng: khớp đúng tên cột sheet 'Orders' ----
+  const data = {
+    'Customer ID': PNP_ORDER_MA_KH,
+    'Tên khách hàng': document.getElementById('ordCustomer').value || '',
+    'Số Orders': document.getElementById('ordCode').value || '',
+    'Ngày tạo đơn': document.getElementById('ordDate').value || '',
+    'Nhân viên bán hàng': document.getElementById('ordSaleRep').value || '',
+    'Diễn giải': document.getElementById('ordDescription').value || '',
+    'Hình thức thanh toán': document.getElementById('ordPaymentMethod').value || '',
+    'Ngày hết hiệu lực báo giá': document.getElementById('ordQuoteExpiry').value || '',
+    'Ngày giao hàng': document.getElementById('ordDeliveryDate').value || '',
+    'Địa chỉ giao hàng': document.getElementById('ordShipTo').value || '',
+    'Người nhận hàng': document.getElementById('ordReceiver').value || '',
+    'SĐT người nhận': document.getElementById('ordReceiverPhone').value || '',
+    'Loại xe chuyên chở': document.getElementById('ordVehicle').value || '',
+    'Quãng đường (km)': parseFloat(document.getElementById('ordDistance').value) || '',
+    'Thời gian ước chừng hoàn thành chuyến xe': document.getElementById('ordEta').value || '',
+    'Chi phí vận chuyển': parseFloat(document.getElementById('ordShipFee').value) || 0,
+  };
+
+  // ---- Từng dòng sản phẩm: khớp đúng tên cột sheet 'Order_Items' ----
+  // (Backend sẽ tự tính Tổng cộng trước thuế / Tiền thuế / Thành tiền sau thuế
+  //  và tự cộng dồn lên header đơn — xem calcItemTotals_() trong Orders.gs)
+  const items = validLines.map(l => ({
+    'Item Code': l.sku,
+    'Item Name': l.name || l.sku,
+    'Loại dòng': 'Sản phẩm',
+    'Số lượng': parseFloat(l.qty) || 0,
+    'Đơn vị': l.unit || 'Tấm',
+    'Đơn giá niêm yết (VND)': parseFloat(l.price) || 0,
+    'Chiết khấu (%)': parseFloat(l.discountPercent) || 0,
+    'Tiền vận chuyển (VND)': 0, // phí vận chuyển đã tính ở cấp đơn hàng (Chi phí vận chuyển)
+    'Thuế VAT (%)': effectiveTaxPercent(l),
+  }));
+
+  const btn = document.getElementById('saveServerBtn');
+  btn.disabled = true;
+  const oldLabel = btn.textContent;
+  btn.textContent = 'Đang lưu…';
+  statusEl.innerHTML = '';
+  try{
+    const order = await callApi('createOrder', { data, items });
+    statusEl.innerHTML = `✅ Đã lưu đơn <b>${order['Số Orders'] || order['Order ID']}</b> vào hệ thống — tổng cộng ${fmtVND(Number(order['Tổng thanh toán']))}. `
+      + `<a href="crm.html?opened=${encodeURIComponent(PNP_ORDER_MA_KH)}">← Quay lại CRM xem đơn này</a>`;
+  }catch(err){
+    statusEl.innerHTML = `<span style="color:#b3261e">❌ ${err.message}</span>`;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }
+}
+
+document.getElementById('saveServerBtn').addEventListener('click', saveOrderToServer);
+initFromQueryParams();
+loadDanhMucForOrder();
 
 /* =========================================================================
    8. INIT
@@ -1238,6 +1436,17 @@ document.getElementById('ordShipFee').addEventListener('input', renderTotals);
 
 lines = [newLine()];
 renderLines();
+
+// ---- lang switcher (đặt trong header) ----
+if(window.PNP_I18N){
+  document.getElementById('langSwitcherWrap').appendChild(PNP_I18N.buildLangSwitcher());
+}
+
+// ---- khi đổi ngôn ngữ: vẽ lại các phần nội dung động ----
+window.addEventListener('i18n:change', ()=>{
+  if(lastStatus) setStatus(lastStatus.kind, lastStatus.key, lastStatus.vars);
+  renderLines();
+});
 </script>
 </body>
 </html>
