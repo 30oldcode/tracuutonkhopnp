@@ -528,8 +528,8 @@
    KẾT NỐI BACKEND — Google Apps Script Web App (PHẢI khớp với crm.html:
    cùng 1 URL sau khi Deploy, cùng 1 API_KEY trong Config.gs). Xem README.md.
    ========================================================================= */
-const API_BASE = 'https://script.google.com/macros/s/AKfycbxRuXPfk-FuGl7LmFNCGMf7tspg1D4ubb01tZPQBZSAqvJ3Lz0N2khGC6chKNZY0-pyJg/exec';
-const API_KEY  = 'GGGUnclean01a@0209';
+const API_BASE = 'https://script.google.com/macros/s/DAN_URL_SAU_KHI_DEPLOY/exec';
+const API_KEY  = 'PANELPLUS-CRM-2026-DOI-CHUOI-NAY';
 
 async function callApi(action, payload = {}) {
   const res = await fetch(API_BASE, {
@@ -575,6 +575,12 @@ function norm(s){
   VN_MAP.forEach(([re,rep])=> s = s.replace(re,rep));
   s = s.replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
   return s;
+}
+function tokens(s){ return norm(s).split(' ').filter(Boolean); }
+// so khớp kiểu "mọi từ khoá đều phải xuất hiện, không cần đúng thứ tự" — y hệt index.html
+function rowMatchesTokens(row, qTokens){
+  const t = norm(row.maVatTu + ' ' + row.tenVatTu);
+  return qTokens.every(tok => t.includes(tok));
 }
 function fmtVND(n){
   n = Math.round(Number(n)||0);
@@ -1102,17 +1108,12 @@ function recalcAllLines(){
   renderLines();
 }
 
-function skuSuggestions(query){
-  const q = norm(query);
-  if(q.length < 1) return [];
-  const out = [];
-  for(const r of TONKHO){
-    if(norm(r.maVatTu).includes(q) || norm(r.tenVatTu).includes(q)){
-      out.push(r);
-      if(out.length >= 8) break;
-    }
-  }
-  return out;
+function productSuggestions(query){
+  const qTok = tokens(query);
+  if(qTok.length < 1) return [];
+  const matched = TONKHO.filter(r => rowMatchesTokens(r, qTok));
+  // ưu tiên tồn kho nhiều nhất lên trước — giống cách sắp xếp ở index.html
+  return matched.slice().sort((a,b)=> b.tonCuoi - a.tonCuoi).slice(0, 8);
 }
 
 function escapeAttr(s){
@@ -1134,7 +1135,7 @@ function renderLines(){
         <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="${tt('skuPlaceholder')}" autocomplete="off" />
       </td>
       <td class="col-name">
-        <input type="text" data-field="name" value="${escapeAttr(line.name)}" placeholder="${tt('namePlaceholder')}" />
+        <input type="text" class="name-input" data-field="name" value="${escapeAttr(line.name)}" placeholder="${tt('namePlaceholder')}" autocomplete="off" />
       </td>
       <td class="col-unit">
         <input type="text" data-field="unit" value="${escapeAttr(line.unit)}" readonly />
@@ -1236,6 +1237,7 @@ linesWrap.addEventListener('click', (e)=>{
 });
 
 let activeSuggestLineId = null;
+let activeSuggestField = null; // 'sku' hoặc 'name'
 const suggestPanel = document.getElementById('skuSuggestPanel');
 const floatTip = document.getElementById('floatTip');
 
@@ -1245,7 +1247,23 @@ function positionPanelUnder(panel, inputEl){
   panel.style.top = Math.round(r.bottom + 4) + 'px';
   panel.style.width = Math.max(240, Math.round(r.width)) + 'px';
 }
-function hideSuggest(){ suggestPanel.classList.remove('open'); activeSuggestLineId = null; }
+function hideSuggest(){ suggestPanel.classList.remove('open'); suggestPanel.innerHTML=''; activeSuggestLineId = null; activeSuggestField = null; }
+function renderSuggestPanel(results, inputEl){
+  if(results.length){
+    suggestPanel.innerHTML = results.map(r=>`
+      <div class="opt" data-sku="${escapeAttr(r.maVatTu)}">
+        <span class="stk">${r.tonCuoi.toLocaleString(localeForLang())} ${escapeAttr(r.dvt)}</span>
+        <span class="sku">${escapeAttr(r.maVatTu)}</span><br/>
+        <span class="nm">${escapeAttr(r.tenVatTu)}</span>
+      </div>`).join('');
+    positionPanelUnder(suggestPanel, inputEl);
+    suggestPanel.classList.add('open');
+  } else {
+    suggestPanel.innerHTML = inputEl.value.trim() ? `<div class="empty">${tt('noSkuMatch')}</div>` : '';
+    if(inputEl.value.trim()){ positionPanelUnder(suggestPanel, inputEl); suggestPanel.classList.add('open'); }
+    else hideSuggest();
+  }
+}
 function showFloatTip(anchorEl, text){
   floatTip.textContent = text;
   const r = anchorEl.getBoundingClientRect();
@@ -1265,25 +1283,18 @@ linesWrap.addEventListener('input', (e)=>{
   if(field === 'sku'){
     line.sku = e.target.value;
     activeSuggestLineId = line.id;
-    const results = skuSuggestions(e.target.value);
-    if(results.length){
-      suggestPanel.innerHTML = results.map(r=>`
-        <div class="opt" data-sku="${escapeAttr(r.maVatTu)}">
-          <span class="stk">${r.tonCuoi.toLocaleString(localeForLang())} ${escapeAttr(r.dvt)}</span>
-          <span class="sku">${escapeAttr(r.maVatTu)}</span><br/>
-          <span class="nm">${escapeAttr(r.tenVatTu)}</span>
-        </div>`).join('');
-      positionPanelUnder(suggestPanel, e.target);
-      suggestPanel.classList.add('open');
-    } else {
-      suggestPanel.innerHTML = e.target.value.trim() ? `<div class="empty">${tt('noSkuMatch')}</div>` : '';
-      if(e.target.value.trim()){ positionPanelUnder(suggestPanel, e.target); suggestPanel.classList.add('open'); }
-      else hideSuggest();
-    }
+    activeSuggestField = 'sku';
+    renderSuggestPanel(productSuggestions(e.target.value), e.target);
     return; // don't re-render whole table on every keystroke — wait for blur/select
   }
 
-  if(field === 'name'){ line.name = e.target.value; return; }
+  if(field === 'name'){
+    line.name = e.target.value;
+    activeSuggestLineId = line.id;
+    activeSuggestField = 'name';
+    renderSuggestPanel(productSuggestions(e.target.value), e.target);
+    return; // không render lại cả bảng khi đang gõ tìm tên — như ô sku
+  }
   if(field === 'unit'){ line.unit = e.target.value; return; }
   if(field === 'qty'){ line.qty = parseFloat(e.target.value)||0; updateRowTotalDisplay(tr, line); return; }
   if(field === 'price'){ line.price = parseFloat(e.target.value)||0; line.priceAuto=false; updateRowTotalDisplay(tr, line); return; }
@@ -1298,8 +1309,17 @@ linesWrap.addEventListener('change', (e)=>{
   const field = e.target.dataset.field;
 
   if(field === 'sku'){
-    // commit typed SKU (in case user typed an exact code and didn't click a suggestion)
+    // commit typed SKU (in case user typed an exact code và didn't click a suggestion)
     applySkuToLine(line, e.target.value);
+    hideSuggest();
+    renderLines();
+    return;
+  }
+  if(field === 'name'){
+    // nếu tên gõ vào khớp CHÍNH XÁC 1 tên vật tư trong kho (không chọn từ bảng gợi ý,
+    // gõ xong rồi rời ô luôn) thì tự điền nốt SKU/đơn vị/giá — tiện khi gõ nhanh
+    const hit = TONKHO.find(r => norm(r.tenVatTu) === norm(e.target.value));
+    if(hit) applySkuToLine(line, hit.maVatTu);
     hideSuggest();
     renderLines();
     return;
@@ -1317,9 +1337,22 @@ function updateRowTotalDisplay(tr, line){
   renderTotals();
 }
 
+// Bảng gợi ý phải "mất" ngay khi bấm sang 1 ô mã vật tư / tên vật tư KHÁC —
+// không được giữ nguyên kết quả cũ của ô trước đó.
+linesWrap.addEventListener('focusin', (e)=>{
+  const input = e.target.closest('.sku-input, .name-input');
+  if(!input) return;
+  const found = findLineFromEvent(e);
+  if(!found) return;
+  const field = input.dataset.field;
+  if(activeSuggestLineId !== found.line.id || activeSuggestField !== field){
+    hideSuggest();
+  }
+});
+
 // close suggestion / tooltip panels when clicking elsewhere or scrolling
 document.addEventListener('click', (e)=>{
-  if(e.target.closest('.sku-input') || e.target.closest('.sku-suggest')) { /* keep open */ }
+  if(e.target.closest('.sku-input') || e.target.closest('.name-input') || e.target.closest('.sku-suggest')) { /* keep open */ }
   else hideSuggest();
   if(!e.target.closest('[data-action="price-info"]')) hideFloatTip();
 });
