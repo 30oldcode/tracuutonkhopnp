@@ -196,34 +196,47 @@
 
   /* ---------- Line item table (mỗi sản phẩm 1 hàng ngang) ---------- */
   .lines-card{padding:6px 6px 10px;margin-bottom:10px;overflow:hidden;}
-  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  table.lines-table{width:100%;border-collapse:collapse;min-width:1180px;}
+  .table-scroll{overflow-x:hidden;} /* không cho tràn/scroll ngang — bảng luôn co vừa 1 màn hình */
+  table.lines-table{width:100%;border-collapse:collapse;table-layout:fixed;}
   table.lines-table th{
-    text-align:left;font-size:11px;font-weight:800;color:#a8a190;
-    letter-spacing:.04em;text-transform:uppercase;
-    padding:12px 8px 8px;white-space:nowrap;border-bottom:1px solid var(--line);
+    text-align:left;font-size:10.5px;font-weight:800;color:#a8a190;
+    letter-spacing:.02em;text-transform:uppercase;
+    padding:12px 5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    border-bottom:1px solid var(--line);
   }
   table.lines-table td{
-    padding:6px 8px;vertical-align:middle;border-bottom:1px solid #f0ede4;
-    position:relative;
+    padding:6px 4px;vertical-align:middle;border-bottom:1px solid #f0ede4;
+    position:relative;overflow:hidden;
   }
   table.lines-table tr:last-child td{border-bottom:none;}
   table.lines-table input, table.lines-table select{
-    padding:7px 8px;font-size:13px;min-width:0;
+    width:100%;box-sizing:border-box;padding:7px 6px;font-size:12.5px;min-width:0;
   }
-  .col-stt{width:30px;color:#a8a190;font-weight:700;font-size:12.5px;text-align:center;}
-  .col-sku input{width:118px;font-family:var(--mono);}
-  .col-name input{width:260px;}
-  .col-unit input{width:56px;text-align:center;}
-  .col-qty input{width:64px;text-align:right;}
-  .col-price{width:150px;}
-  .col-price .price-row{display:flex;align-items:center;gap:5px;}
-  .col-price input{width:118px;text-align:right;}
-  .col-discount input{width:70px;text-align:right;}
-  .col-tax select{width:86px;}
-  .col-tax input.tax-custom{width:70px;margin-top:4px;}
-  .col-total{width:130px;text-align:right;font-weight:800;color:var(--blue-deep);font-variant-numeric:tabular-nums;white-space:nowrap;}
-  .col-remove{width:34px;text-align:center;}
+  /* Tỉ lệ % cộng đúng 100% — bảng luôn vừa 1 màn hình ngang, không cần scroll */
+  /* Hàng 1 của mỗi dòng sản phẩm: STT / Mã / ĐVT / SL / Đơn giá / CK% / Thuế / Xoá — 8 cột, cộng đúng 100% */
+  .col-stt{width:4%;color:#a8a190;font-weight:700;font-size:12.5px;text-align:center;padding-left:2px;}
+  .col-sku{width:20%;}
+  .col-sku input{font-family:var(--mono);font-size:11.5px;}
+  .col-unit{width:8%;}
+  .col-unit input{text-align:center;padding-left:2px;padding-right:2px;}
+  .col-qty{width:9%;}
+  .col-qty input{text-align:right;padding-left:2px;}
+  .col-price{width:19%;}
+  .col-price .price-row{display:flex;align-items:center;gap:4px;min-width:0;}
+  .col-price input{text-align:right;min-width:0;flex:1 1 auto;}
+  .col-discount{width:10%;}
+  .col-discount input{text-align:right;padding-left:2px;}
+  .col-tax{width:14%;}
+  .col-tax select{font-size:11.5px;padding-left:4px;padding-right:2px;}
+  .col-tax input.tax-custom{width:100%;box-sizing:border-box;margin-top:4px;}
+  .col-remove{width:16%;text-align:center;padding:6px 0;}
+
+  /* Hàng 2 (phụ) của mỗi dòng sản phẩm: Tên vật tư (colspan 7) + Thành tiền — cùng hàng, tên bên trái, tiền bên phải */
+  tr.line-row-top td{border-bottom:none;padding-bottom:2px;}
+  tr.line-row-bottom td{padding-top:2px;}
+  .col-name-row{padding-left:26px !important;} /* thụt vào để thấy rõ đây là mô tả của dòng phía trên */
+  .col-name-row input{font-size:12.5px;color:var(--ink-soft);}
+  .col-total-row{width:16%;text-align:right;font-weight:800;color:var(--blue-deep);font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap;padding-right:8px !important;}
 
   .price-flag{
     flex:none;width:18px;height:18px;border-radius:50%;
@@ -330,7 +343,6 @@
     body{padding:0;background:#fff;}
     .wrap{margin:0;padding:0;max-width:100%;}
     .table-scroll{overflow:visible;}
-    table.lines-table{min-width:0;}
     input, select{border:none !important;background:none !important;padding:2px 0 !important;}
   }
 </style>
@@ -1145,13 +1157,10 @@ function renderLines(){
     const flagAuto = line.priceAuto;
     const flagShown = !!line.priceReason;
     return `
-    <tr data-id="${line.id}">
+    <tr data-id="${line.id}" class="line-row-top">
       <td class="col-stt">${idx+1}</td>
       <td class="col-sku">
         <input type="text" class="sku-input" data-field="sku" value="${escapeAttr(line.sku)}" placeholder="${tt('skuPlaceholder')}" autocomplete="off" />
-      </td>
-      <td class="col-name">
-        <input type="text" class="name-input" data-field="name" value="${escapeAttr(line.name)}" placeholder="${tt('namePlaceholder')}" autocomplete="off" />
       </td>
       <td class="col-unit">
         <input type="text" data-field="unit" value="${escapeAttr(line.unit)}" readonly />
@@ -1180,8 +1189,13 @@ function renderLines(){
         </select>
         ${taxIsCustom ? `<input type="number" class="tax-custom" data-field="taxCustom" placeholder="%" value="${escapeAttr(line.taxCustom)}" />` : ''}
       </td>
-      <td class="col-total">${fmtVND(lineTotal(line))}</td>
       <td class="col-remove"><button type="button" class="remove-line-btn" data-action="remove" title="${tt('removeLineTitle')}">🗑</button></td>
+    </tr>
+    <tr data-id="${line.id}" class="line-row-bottom">
+      <td class="col-name-row" colspan="7">
+        <input type="text" class="name-input" data-field="name" value="${escapeAttr(line.name)}" placeholder="${tt('namePlaceholder')}" autocomplete="off" />
+      </td>
+      <td class="col-total-row" data-line-total="${line.id}">${fmtVND(lineTotal(line))}</td>
     </tr>`;
   }).join('');
 
@@ -1193,13 +1207,11 @@ function renderLines(){
             <tr>
               <th>#</th>
               <th>${tt('thSkuShort')}</th>
-              <th>${tt('thNameShort')}</th>
               <th>${tt('thUnitShort')}</th>
               <th>${tt('thQty')}</th>
               <th>${tt('thUnitPrice')}</th>
               <th>${tt('thDiscount')}</th>
               <th>${tt('thTax')}</th>
-              <th>${tt('thTotal')}</th>
               <th></th>
             </tr>
           </thead>
@@ -1377,7 +1389,7 @@ linesWrap.addEventListener('change', (e)=>{
 });
 
 function updateRowTotalDisplay(tr, line){
-  const totalCell = tr.querySelector('.col-total');
+  const totalCell = linesWrap.querySelector(`[data-line-total="${line.id}"]`);
   if(totalCell) totalCell.textContent = fmtVND(lineTotal(line));
   renderTotals();
 }
