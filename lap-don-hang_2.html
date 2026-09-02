@@ -243,21 +243,37 @@
 
   .sku-input{font-family:var(--mono);}
   .sku-suggest{
-    display:none;position:fixed;z-index:60;
-    max-height:230px;overflow-y:auto;background:var(--panel);
-    border:1px solid var(--line);border-radius:8px;
-    box-shadow:0 10px 28px -10px rgba(28,26,23,.3);
+    display:none;
+    margin:0 0 10px;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 2px 10px -6px rgba(28,26,23,.15);
+    overflow:hidden;
   }
   .sku-suggest.open{display:block;}
-  .sku-suggest .opt{
-    padding:8px 10px;cursor:pointer;border-bottom:1px solid #f0ede4;font-size:12.5px;
+  .sku-suggest .suggest-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:9px 12px;background:#F6F1E6;border-bottom:1px solid var(--line);
+    font-size:12.5px;font-weight:700;color:var(--ink-soft);
   }
-  .sku-suggest .opt:last-child{border-bottom:none;}
-  .sku-suggest .opt:hover, .sku-suggest .opt.hi{background:#eef5fb;}
-  .sku-suggest .opt .sku{font-family:var(--mono);font-weight:700;color:var(--blue-deep);font-size:11.5px;}
-  .sku-suggest .opt .nm{color:var(--ink-soft);font-size:11.5px;}
-  .sku-suggest .opt .stk{float:right;font-size:11px;color:#847e72;}
-  .sku-suggest .empty{padding:10px;font-size:12px;color:#847e72;}
+  .sku-suggest .suggest-head .close-suggest{
+    cursor:pointer;font-weight:400;color:#847e72;font-size:16px;line-height:1;
+    padding:2px 4px;
+  }
+  .sku-suggest .suggest-head .close-suggest:hover{color:var(--ink);}
+  .sku-suggest .suggest-body{max-height:280px;overflow-y:auto;}
+  .sku-suggest table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .sku-suggest table thead th{
+    position:sticky;top:0;background:var(--panel);
+    text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;
+    letter-spacing:.03em;color:#847e72;border-bottom:1px solid var(--line);
+  }
+  .sku-suggest table td{padding:7px 10px;border-bottom:1px solid #f0ede4;}
+  .sku-suggest table tr.opt{cursor:pointer;}
+  .sku-suggest table tr.opt:hover{background:#eef5fb;}
+  .sku-suggest table tr.opt:last-child td{border-bottom:none;}
+  .sku-suggest td.sku{font-family:var(--mono);font-weight:700;color:var(--blue-deep);white-space:nowrap;}
+  .sku-suggest td.stk{text-align:right;white-space:nowrap;color:#847e72;}
+  .sku-suggest .empty{padding:16px 12px;font-size:12.5px;color:#847e72;text-align:center;}
 
   .remove-line-btn{
     background:none;border:none;cursor:pointer;color:#c08a8a;
@@ -1228,12 +1244,6 @@ linesWrap.addEventListener('click', (e)=>{
     showFloatTip(infoBtn, infoBtn.getAttribute('title'));
     return;
   }
-  const opt = e.target.closest('.sku-suggest .opt');
-  if(opt){
-    const line = lines.find(l=>l.id===activeSuggestLineId);
-    if(line){ applySkuToLine(line, opt.dataset.sku); renderLines(); }
-    hideSuggest();
-  }
 });
 
 let activeSuggestLineId = null;
@@ -1241,43 +1251,67 @@ let activeSuggestField = null; // 'sku' hoặc 'name'
 const suggestPanel = document.getElementById('skuSuggestPanel');
 const floatTip = document.getElementById('floatTip');
 
-function positionPanelUnder(panel, inputEl){
-  const r = inputEl.getBoundingClientRect();
-  panel.style.left = Math.round(r.left) + 'px';
-  panel.style.top = Math.round(r.bottom + 4) + 'px';
-  panel.style.width = Math.max(240, Math.round(r.width)) + 'px';
-}
-function hideSuggest(){ suggestPanel.classList.remove('open'); suggestPanel.innerHTML=''; activeSuggestLineId = null; activeSuggestField = null; }
-function renderSuggestPanel(results, inputEl){
-  if(results.length){
-    suggestPanel.innerHTML = results.map(r=>`
-      <div class="opt" data-sku="${escapeAttr(r.maVatTu)}">
-        <span class="stk">${r.tonCuoi.toLocaleString(localeForLang())} ${escapeAttr(r.dvt)}</span>
-        <span class="sku">${escapeAttr(r.maVatTu)}</span><br/>
-        <span class="nm">${escapeAttr(r.tenVatTu)}</span>
-      </div>`).join('');
-    positionPanelUnder(suggestPanel, inputEl);
-    suggestPanel.classList.add('open');
-  } else {
-    suggestPanel.innerHTML = `<div class="empty">Không tìm thấy vật tư nào khớp "${escapeAttr(inputEl.value.trim())}".</div>`;
-    positionPanelUnder(suggestPanel, inputEl);
-    suggestPanel.classList.add('open');
+// Bảng gợi ý nằm NGOÀI linesWrap trong DOM nên phải có listener click riêng
+// (không thể dựa vào listener gắn trên linesWrap).
+suggestPanel.addEventListener('click', (e)=>{
+  if(e.target.closest('[data-action="close-suggest"]')){ hideSuggest(); return; }
+  const opt = e.target.closest('tr.opt');
+  if(opt){
+    const line = lines.find(l=>l.id===activeSuggestLineId);
+    if(line){ applySkuToLine(line, opt.dataset.sku); renderLines(); }
+    hideSuggest();
   }
+});
+
+function hideSuggest(){ suggestPanel.classList.remove('open'); suggestPanel.innerHTML=''; activeSuggestLineId = null; activeSuggestField = null; }
+
+function suggestHead(lineIdx, subtitle){
+  return `<div class="suggest-head">
+    <span>🔎 Kết quả tìm kiếm — chọn để điền vào dòng #${lineIdx+1}${subtitle?(' · '+subtitle):''}</span>
+    <span class="close-suggest" data-action="close-suggest" title="Đóng bảng kết quả">✕</span>
+  </div>`;
 }
+
+function renderSuggestPanel(results, lineIdx){
+  if(results.length){
+    suggestPanel.innerHTML = suggestHead(lineIdx, results.length + ' kết quả') + `
+      <div class="suggest-body">
+        <table>
+          <thead><tr><th>SKU</th><th>Tên vật tư</th><th>ĐVT</th><th style="text-align:right">Tồn kho</th></tr></thead>
+          <tbody>
+            ${results.map(r=>`
+              <tr class="opt" data-sku="${escapeAttr(r.maVatTu)}">
+                <td class="sku">${escapeAttr(r.maVatTu)}</td>
+                <td>${escapeAttr(r.tenVatTu)}</td>
+                <td>${escapeAttr(r.dvt)}</td>
+                <td class="stk">${r.tonCuoi.toLocaleString(localeForLang())}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } else {
+    suggestPanel.innerHTML = suggestHead(lineIdx) +
+      `<div class="empty">Không tìm thấy vật tư nào khớp từ khoá đã nhập.</div>`;
+  }
+  suggestPanel.classList.add('open');
+}
+
 // Mở bảng ngay khi bấm vào ô (kể cả chưa gõ gì) — hiện gợi ý "gõ để tìm",
 // giống trạng thái rỗng (emptyState) của index.html — rồi khi gõ thì thay
-// bằng bảng kết quả thật để chọn SKU.
+// bằng bảng kết quả thật (dạng bảng, nằm cố định trong trang, không mất khi
+// cuộn) để chọn SKU.
 function updateSuggestFor(line, field, inputEl){
   activeSuggestLineId = line.id;
   activeSuggestField = field;
+  const lineIdx = lines.findIndex(l=>l.id===line.id);
   const val = inputEl.value.trim();
   if(!val){
-    suggestPanel.innerHTML = `<div class="empty">🔍 Gõ mã SKU hoặc tên vật tư (VD: brown nordic elm) để tìm và chọn nhanh…</div>`;
-    positionPanelUnder(suggestPanel, inputEl);
+    suggestPanel.innerHTML = suggestHead(lineIdx) +
+      `<div class="empty">🔍 Gõ mã SKU hoặc tên vật tư (VD: brown nordic elm) để tìm và chọn nhanh…</div>`;
     suggestPanel.classList.add('open');
     return;
   }
-  renderSuggestPanel(productSuggestions(val), inputEl);
+  renderSuggestPanel(productSuggestions(val), lineIdx);
 }
 function showFloatTip(anchorEl, text){
   floatTip.textContent = text;
@@ -1365,7 +1399,7 @@ document.addEventListener('click', (e)=>{
   else hideSuggest();
   if(!e.target.closest('[data-action="price-info"]')) hideFloatTip();
 });
-document.addEventListener('scroll', ()=>{ hideSuggest(); hideFloatTip(); }, true);
+document.addEventListener('scroll', ()=>{ hideFloatTip(); }, true);
 
 document.getElementById('addLineBtn').addEventListener('click', addLine);
 
