@@ -1259,10 +1259,25 @@ function renderSuggestPanel(results, inputEl){
     positionPanelUnder(suggestPanel, inputEl);
     suggestPanel.classList.add('open');
   } else {
-    suggestPanel.innerHTML = inputEl.value.trim() ? `<div class="empty">${tt('noSkuMatch')}</div>` : '';
-    if(inputEl.value.trim()){ positionPanelUnder(suggestPanel, inputEl); suggestPanel.classList.add('open'); }
-    else hideSuggest();
+    suggestPanel.innerHTML = `<div class="empty">Không tìm thấy vật tư nào khớp "${escapeAttr(inputEl.value.trim())}".</div>`;
+    positionPanelUnder(suggestPanel, inputEl);
+    suggestPanel.classList.add('open');
   }
+}
+// Mở bảng ngay khi bấm vào ô (kể cả chưa gõ gì) — hiện gợi ý "gõ để tìm",
+// giống trạng thái rỗng (emptyState) của index.html — rồi khi gõ thì thay
+// bằng bảng kết quả thật để chọn SKU.
+function updateSuggestFor(line, field, inputEl){
+  activeSuggestLineId = line.id;
+  activeSuggestField = field;
+  const val = inputEl.value.trim();
+  if(!val){
+    suggestPanel.innerHTML = `<div class="empty">🔍 Gõ mã SKU hoặc tên vật tư (VD: brown nordic elm) để tìm và chọn nhanh…</div>`;
+    positionPanelUnder(suggestPanel, inputEl);
+    suggestPanel.classList.add('open');
+    return;
+  }
+  renderSuggestPanel(productSuggestions(val), inputEl);
 }
 function showFloatTip(anchorEl, text){
   floatTip.textContent = text;
@@ -1282,17 +1297,13 @@ linesWrap.addEventListener('input', (e)=>{
 
   if(field === 'sku'){
     line.sku = e.target.value;
-    activeSuggestLineId = line.id;
-    activeSuggestField = 'sku';
-    renderSuggestPanel(productSuggestions(e.target.value), e.target);
+    updateSuggestFor(line, 'sku', e.target);
     return; // don't re-render whole table on every keystroke — wait for blur/select
   }
 
   if(field === 'name'){
     line.name = e.target.value;
-    activeSuggestLineId = line.id;
-    activeSuggestField = 'name';
-    renderSuggestPanel(productSuggestions(e.target.value), e.target);
+    updateSuggestFor(line, 'name', e.target);
     return; // không render lại cả bảng khi đang gõ tìm tên — như ô sku
   }
   if(field === 'unit'){ line.unit = e.target.value; return; }
@@ -1337,17 +1348,15 @@ function updateRowTotalDisplay(tr, line){
   renderTotals();
 }
 
-// Bảng gợi ý phải "mất" ngay khi bấm sang 1 ô mã vật tư / tên vật tư KHÁC —
-// không được giữ nguyên kết quả cũ của ô trước đó.
+// Bấm/focus vào bất kỳ ô mã vật tư / tên vật tư nào -> mở ngay bảng gợi ý cho
+// ĐÚNG ô đó (hint nếu đang trống, kết quả thật nếu đã có sẵn chữ) — và bảng
+// của ô trước đó (nếu có) coi như đã "mất" vì bị thay bằng nội dung của ô mới.
 linesWrap.addEventListener('focusin', (e)=>{
   const input = e.target.closest('.sku-input, .name-input');
   if(!input) return;
   const found = findLineFromEvent(e);
   if(!found) return;
-  const field = input.dataset.field;
-  if(activeSuggestLineId !== found.line.id || activeSuggestField !== field){
-    hideSuggest();
-  }
+  updateSuggestFor(found.line, input.dataset.field, input);
 });
 
 // close suggestion / tooltip panels when clicking elsewhere or scrolling
